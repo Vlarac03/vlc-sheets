@@ -499,7 +499,7 @@ class LibraryRepository(private val context: Context) {
                 val data = _data.value
                 val next = data.copy(
                     songs = data.songs.filterNot { it.id in ids },
-                    setlists = data.setlists.map { sl -> sl.copy(songIds = sl.songIds.filterNot { it in ids }) },
+                    setlists = data.setlists.map { sl -> sl.copy(songIds = sl.songIds.filterNot { it in ids }, songNotes = sl.songNotes - ids) },
                 )
                 _data.value = next
                 persistLocked(next)

@@ -94,6 +94,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -334,12 +336,18 @@ private fun ViewerContent(
         val controller = activity?.let {
             WindowInsetsControllerCompat(it.window, it.window.decorView)
         }
+        // The viewer is always dark: light status bar icons, put back as they were on leaving.
+        val lightBars = controller?.isAppearanceLightStatusBars
+        controller?.isAppearanceLightStatusBars = false
         if (chromeVisible) {
             controller?.show(WindowInsetsCompat.Type.systemBars())
         } else {
             controller?.hide(WindowInsetsCompat.Type.systemBars())
         }
-        onDispose { controller?.show(WindowInsetsCompat.Type.systemBars()) }
+        onDispose {
+            controller?.show(WindowInsetsCompat.Type.systemBars())
+            lightBars?.let { controller.isAppearanceLightStatusBars = it }
+        }
     }
 
     LaunchedEffect(chromeVisible, annotationMode, page) {
@@ -745,6 +753,11 @@ private fun ViewerContent(
                                 onValueChange = { sliderPage = it },
                                 onValueChangeFinished = { jumpTo(sliderPage.roundToInt() - 1) },
                                 valueRange = 1f..song.pageCount.toFloat(),
+                                colors = SliderDefaults.colors(
+                                    thumbColor = Brass,
+                                    activeTrackColor = Brass,
+                                    inactiveTrackColor = Color.White.copy(alpha = 0.22f),
+                                ),
                                 modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
                             )
                             Text(
@@ -1312,17 +1325,31 @@ private fun PageView(
                 )
             }
 
-            Canvas(modifier = Modifier.fillMaxSize().clipToBounds()) {
+            // Finished marks live in their own layer, which is not redrawn while the pen moves:
+            // only the layer on top, with the stroke being drawn, is.
+            Canvas(modifier = Modifier.fillMaxSize().clipToBounds().graphicsLayer()) {
                 val fullWidth = size.width / shown.width
                 val fullHeight = size.height / shown.height
                 translate(-shown.left * fullWidth, -shown.top * fullHeight) {
-                    (masks + listOfNotNull(liveMask)).forEach { m ->
+                    masks.forEach { m ->
                         val topLeft = Offset(m.left * fullWidth, m.top * fullHeight)
                         val area = Size((m.right - m.left) * fullWidth, (m.bottom - m.top) * fullHeight)
-                        if (m !== liveMask) drawRect(paperColor, topLeft, area)
+                        drawRect(paperColor, topLeft, area)
                         if (editMode == PageEdit.MASKS) drawRect(Brass, topLeft, area, style = DrawScopeStroke(width = 2.dp.toPx()))
                     }
                     strokes.forEach { stroke -> drawStroke(stroke, fullWidth, fullHeight) }
+                    jumps.forEach { j -> drawJumpMarker(j, Offset(j.x * fullWidth, j.y * fullHeight), markerRadius) }
+                }
+            }
+            Canvas(modifier = Modifier.fillMaxSize().clipToBounds().graphicsLayer()) {
+                val fullWidth = size.width / shown.width
+                val fullHeight = size.height / shown.height
+                translate(-shown.left * fullWidth, -shown.top * fullHeight) {
+                    liveMask?.let { m ->
+                        val topLeft = Offset(m.left * fullWidth, m.top * fullHeight)
+                        val area = Size((m.right - m.left) * fullWidth, (m.bottom - m.top) * fullHeight)
+                        drawRect(Brass, topLeft, area, style = DrawScopeStroke(width = 2.dp.toPx()))
+                    }
                     if (livePoints.size > 1) {
                         val liveStroke = Stroke(
                             id = "live",
@@ -1334,7 +1361,6 @@ private fun PageView(
                         )
                         drawStroke(liveStroke, fullWidth, fullHeight)
                     }
-                    jumps.forEach { j -> drawJumpMarker(j, Offset(j.x * fullWidth, j.y * fullHeight), markerRadius) }
                 }
             }
         }
@@ -1552,6 +1578,18 @@ private fun AnnotationToolbar(
                                 },
                             )
                         },
+                        colors = FilterChipDefaults.filterChipColors(
+                            labelColor = Color.White.copy(alpha = 0.85f),
+                            selectedContainerColor = Brass.copy(alpha = 0.25f),
+                            selectedLabelColor = Brass,
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = penStyle.tool == tool,
+                            borderColor = Color.White.copy(alpha = 0.3f),
+                            selectedBorderColor = Brass,
+                            selectedBorderWidth = 1.dp,
+                        ),
                         modifier = Modifier.padding(end = 6.dp),
                     )
                 }
@@ -1581,8 +1619,8 @@ private fun AnnotationToolbar(
                             .clip(CircleShape)
                             .background(Color(color.toInt()))
                             .border(
-                                width = if (selected) 2.5.dp else 0.dp,
-                                color = if (selected) Color.White else Color.Transparent,
+                                width = if (selected) 2.5.dp else 1.dp,
+                                color = if (selected) Color.White else Color.White.copy(alpha = 0.3f),
                                 shape = CircleShape,
                             )
                             .pointerInput(color) {

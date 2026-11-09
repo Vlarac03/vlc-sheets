@@ -34,7 +34,13 @@ import java.text.Normalizer
 
 enum class SortOrder { TITLE, COMPOSER, YEAR, RECENT, ADDED }
 
-data class UiMessage(val resId: Int, val args: List<Any> = emptyList(), val quantity: Int? = null)
+/** A snackbar text; with [onUndo] it gets an "Undo" button. */
+data class UiMessage(
+    val resId: Int,
+    val args: List<Any> = emptyList(),
+    val quantity: Int? = null,
+    val onUndo: (() -> Unit)? = null,
+)
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -263,7 +269,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         if (added.isEmpty()) return@launch message(R.string.handwriting_none)
         repository.replaceStrokes(song.id, removeIds, added)
-        pluralMessage(R.plurals.handwriting_converted, added.size)
+        val handwriting = song.annotations.filter { it.id in removeIds }
+        val undo = { viewModelScope.launch { repository.replaceStrokes(song.id, added.map { it.id }.toSet(), handwriting) }; Unit }
+        _messages.trySend(UiMessage(R.plurals.handwriting_converted, listOf(added.size), quantity = added.size, onUndo = undo))
     }
 
     fun addInkSample(sample: com.vlcsheets.app.data.InkSample) = viewModelScope.launch {

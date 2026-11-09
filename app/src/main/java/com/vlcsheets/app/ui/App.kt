@@ -20,7 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,10 +75,13 @@ fun VlcSheetsRoot(vm: MainViewModel) {
 
         LaunchedEffect(Unit) {
             vm.messages.collect { message ->
-                snackbarHostState.showSnackbar(
+                val result = snackbarHostState.showSnackbar(
                     message.quantity?.let { resources.getQuantityString(message.resId, it, *message.args.toTypedArray()) }
                         ?: resources.getString(message.resId, *message.args.toTypedArray()),
+                    actionLabel = message.onUndo?.let { resources.getString(R.string.action_undo) },
+                    duration = if (message.onUndo != null) SnackbarDuration.Long else SnackbarDuration.Short,
                 )
+                if (result == SnackbarResult.ActionPerformed) message.onUndo?.invoke()
             }
         }
 

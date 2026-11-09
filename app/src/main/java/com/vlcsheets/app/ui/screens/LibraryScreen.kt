@@ -1,5 +1,10 @@
 package com.vlcsheets.app.ui.screens
 
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedVisibility
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -328,17 +333,24 @@ fun LibraryScreen(
             }
         }
 
-        ExtendedFloatingActionButton(
-            onClick = { importLauncher.launch(arrayOf("application/pdf", "image/*", "text/*", "application/octet-stream")) },
-            modifier = Modifier
-                .pressScale()
-                .align(Alignment.BottomEnd)
-                .padding(20.dp),
-            icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
-            text = { Text(stringResource(R.string.action_import)) },
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-        )
+        // An empty screen has its own big button; the floating one comes in once there is content.
+        AnimatedVisibility(
+            visible = library.songs.isNotEmpty(),
+            modifier = Modifier.align(Alignment.BottomEnd),
+            enter = fadeIn() + scaleIn(initialScale = 0.8f),
+            exit = fadeOut() + scaleOut(targetScale = 0.8f),
+        ) {
+            ExtendedFloatingActionButton(
+                onClick = { importLauncher.launch(arrayOf("application/pdf", "image/*", "text/*", "application/octet-stream")) },
+                modifier = Modifier
+                    .pressScale()
+                    .padding(20.dp),
+                icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
+                text = { Text(stringResource(R.string.action_import)) },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            )
+        }
     }
 
     editing?.let { song ->

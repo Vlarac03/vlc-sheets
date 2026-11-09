@@ -1,5 +1,10 @@
 package com.vlcsheets.app.ui.screens
 
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -156,17 +161,24 @@ fun CollectionsScreen(
             }
         }
 
-        ExtendedFloatingActionButton(
-            onClick = { showCreate = true },
-            modifier = Modifier
-                .pressScale()
-                .align(Alignment.BottomEnd)
-                .padding(20.dp),
-            icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
-            text = { Text(stringResource(R.string.new_collection)) },
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-        )
+        // An empty screen has its own big button; the floating one comes in once there is content.
+        AnimatedVisibility(
+            visible = library.collections.isNotEmpty(),
+            modifier = Modifier.align(Alignment.BottomEnd),
+            enter = fadeIn() + scaleIn(initialScale = 0.8f),
+            exit = fadeOut() + scaleOut(targetScale = 0.8f),
+        ) {
+            ExtendedFloatingActionButton(
+                onClick = { showCreate = true },
+                modifier = Modifier
+                    .pressScale()
+                    .padding(20.dp),
+                icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
+                text = { Text(stringResource(R.string.new_collection)) },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            )
+        }
     }
 
     if (showCreate) {
