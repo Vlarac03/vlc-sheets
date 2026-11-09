@@ -1,0 +1,22 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild
+.cxx
+local.properties
+app/build/
+*.apk
+*.aab
+.kotlin/
+# Signing keys and their passwords never go in the repo.
+*.jks
+*.keystore
+keystore.properties
+.env
+# Notes for Claude and the task list stay on this PC.
+CLAUDE.md
+TODO.md

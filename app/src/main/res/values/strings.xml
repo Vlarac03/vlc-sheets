@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">VLC Sheets</string>
+    <string name="app_wordmark">VLC SHEETS</string>
+
+    <!-- Navigation -->
+    <string name="nav_library">Biblioteca</string>
+    <string name="nav_setlists">Llistes</string>
+    <string name="nav_collections">Col·leccions</string>
+    <string name="nav_settings">Ajustos</string>
+
+    <!-- Library -->
+    <string name="search_placeholder">Cerca títol, compositor, etiqueta…</string>
+    <string name="filter_all">Totes</string>
+    <string name="filter_favorites">Preferides</string>
+    <string name="empty_library_title">Encara no hi ha res</string>
+    <string name="empty_library_subtitle">Importa partitures en PDF o imatges i comença a tocar.</string>
+    <string name="empty_results_title">Cap resultat</string>
+    <string name="empty_results_subtitle" tools:ignore="Typos">Prova una cerca diferent o treu els filtres.</string>
+    <string name="clear_filters">Treu els filtres</string>
+    <string name="importing">Important %1$s…</string>
+    <string name="unknown_composer">Sense compositor</string>
+    <string name="action_import">Importa</string>
+    <string name="action_change_view">Canvia la vista</string>
+    <string name="action_sort">Ordena</string>
+    <string name="action_clear">Neteja</string>
+    <string name="action_close">Tanca</string>
+    <string name="action_save">Desa</string>
+    <string name="action_cancel">Cancel·la</string>
+    <string name="action_back">Torna</string>
+    <string name="action_edit">Edita</string>
+    <string name="action_delete">Elimina</string>
+    <string name="action_delete_all">Elimina-ho tot</string>
+    <string name="action_rename">Reanomena</string>
+    <string name="action_remove">Treu</string>
+    <string name="action_move_up">Mou amunt</string>
+    <string name="action_move_down">Mou avall</string>
+    <string name="action_favorite">Marca com a preferida</string>
+    <string name="action_unfavorite">Treu de preferides</string>
+    <string name="action_done">Fet</string>
+    <string name="action_play">Reprodueix</string>
+    <string name="action_next_page">Pàgina següent</string>
+    <string name="action_prev_page">Pàgina anterior</string>
+    <string name="action_undo">Desfés</string>
+
+    <!-- Sorting -->
+    <string name="sort_title">Títol</string>
+    <string name="sort_composer">Compositor</string>
+    <string name="sort_recent">Última obertura</string>
+    <string name="sort_added">Data d’alta</string>
+
+    <!-- Song editor -->
+    <string name="edit_song">Informació de la partitura</string>
+    <string name="field_title">Títol</string>
+    <string name="field_composer">Compositor</string>
+    <string name="field_genre">Gènere</string>
+    <string name="field_key">Tonalitat</string>
+    <string name="field_tempo">BPM</string>
+    <string name="field_tags">Etiquetes</string>
+    <string name="field_tags_hint">Separades per comes</string>
+    <string name="field_collections">Col·leccions</string>
+    <string name="field_new_collection">Afegeix una col·lecció…</string>
+    <string name="field_notes">Notes</string>
+    <string name="favorite">Preferida</string>
+    <string name="favorite_hint">Apareixerà destacada a la biblioteca</string>
+    <string name="added_on">Afegida el %1$s</string>
+    <string name="untitled">Sense títol</string>
+    <string name="image">Imatge</string>
+    <string name="delete_song_title">Eliminar la partitura?</string>
+    <string name="delete_song_text">S’eliminarà «%1$s» i les seves anotacions. Aquesta acció no es pot desfer.</string>
+    <string name="delete_song">Elimina la partitura</string>
+
+    <!-- Setlists -->
+    <string name="setlists_title">Llistes</string>
+    <string name="new_setlist">Nova llista</string>
+    <string name="rename_setlist">Reanomena la llista</string>
+    <string name="setlist_name">Nom de la llista</string>
+    <string name="delete_setlist_title">Eliminar la llista?</string>
+    <string name="delete_setlist_text">S’eliminarà «%1$s». Les partitures es conservaran a la biblioteca.</string>
+    <string name="empty_setlists_title">Crea la teva primera llista</string>
+    <string name="empty_setlists_subtitle">Ordena les cançons d’un concert o d’un assaig i toca-les seguides.</string>
+    <string name="empty_setlist_title">Aquesta llista és buida</string>
+    <string name="empty_setlist_subtitle">Afegeix cançons per preparar el proper bolo.</string>
+    <string name="add_songs">Afegeix cançons</string>
+    <string name="add_songs_count">Afegeix-ne %1$d</string>
+    <string name="no_songs_available">No hi ha cançons per afegir.</string>
+    <string name="add_to_setlist">Afegeix a la llista</string>
+    <string name="no_setlists">Encara no hi ha llistes</string>
+    <string name="songs">cançons</string>
+    <string name="pages">pàgines</string>
+    <string name="annotated">anotades</string>
+
+    <!-- Collections -->
+    <string name="collections_title">Col·leccions</string>
+    <string name="new_collection">Nova col·lecció</string>
+    <string name="rename_collection">Reanomena la col·lecció</string>
+    <string name="collection_name">Nom de la col·lecció</string>
+    <string name="delete_collection_title">Eliminar la col·lecció?</string>
+    <string name="delete_collection_text">S’eliminarà «%1$s». Les partitures es conservaran a la biblioteca.</string>
+    <string name="empty_collections_title">Organitza la teva música</string>
+    <string name="empty_collections_subtitle">Agrupa partitures per estil, instrument o concert.</string>
+
+    <!-- Viewer -->
+    <string name="page_of">Pàgina %1$d de %2$d</string>
+    <string name="queue_position">Cançó %1$d de %2$d</string>
+    <string name="next_song">Cançó següent</string>
+    <string name="reset_zoom">Ajusta la pàgina</string>
+    <string name="annotations">Anotacions</string>
+    <string name="bookmarks">Marcadors</string>
+    <string name="bookmarks_hint">Salta ràpidament a un punt de la partitura.</string>
+    <string name="add_bookmark">Afegeix la pàgina %1$d</string>
+    <string name="page_label">Pàgina %1$d</string>
+    <string name="no_bookmarks">Encara no hi ha marcadors.</string>
+    <string name="invert_colors">Inverteix els colors</string>
+    <string name="metronome">Metrònom</string>
+    <string name="bpm">Pulsacions per minut</string>
+    <string name="beats_per_bar">Pulsacions per compàs</string>
+    <string name="accent_first_beat">Accentua la primera pulsació</string>
+    <string name="start">Comença</string>
+    <string name="stop">Atura</string>
+    <string name="tool_pen">Bolígraf</string>
+    <string name="tool_highlighter">Marcador</string>
+    <string name="tool_eraser">Goma</string>
+    <string name="clear_annotations_title">Esborrar les anotacions?</string>
+    <string name="clear_annotations_text">S’esborraran totes les anotacions d’aquesta pàgina.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustos</string>
+    <string name="settings_subtitle">Fet per a músics</string>
+    <string name="section_appearance">Aparença</string>
+    <string name="section_reading">Lectura</string>
+    <string name="section_data">Dades</string>
+    <string name="section_about">Quant a</string>
+    <string name="setting_theme">Tema</string>
+    <string name="setting_theme_desc">Tria com es veu l’aplicació</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Clar</string>
+    <string name="theme_dark">Fosc</string>
+    <string name="setting_dynamic_color">Colors dinàmics</string>
+    <string name="setting_dynamic_color_desc">Adapta l’app al fons de pantalla (Android 12+)</string>
+    <string name="setting_keep_screen_on">Mantén la pantalla encesa</string>
+    <string name="setting_keep_screen_on_desc">Mentre llegeixes una partitura</string>
+    <string name="setting_volume_keys">Tecles de volum per passar pàgina</string>
+    <string name="setting_volume_keys_desc">Útil amb pedals Bluetooth</string>
+    <string name="setting_invert_pages">Inverteix les pàgines en mode fosc</string>
+    <string name="setting_invert_pages_desc">Fons negre, notes blanques</string>
+    <string name="backup_export">Crea una còpia de seguretat</string>
+    <string name="backup_export_desc">Desa tota la biblioteca en un fitxer ZIP</string>
+    <string name="backup_restore">Restaura una còpia</string>
+    <string name="backup_restore_desc">Substitueix la biblioteca actual</string>
+    <string name="backup_progress">S’està preparant la biblioteca…</string>
+    <string name="clear_library">Buida la biblioteca</string>
+    <string name="clear_library_desc">Elimina totes les partitures i anotacions</string>
+    <string name="clear_library_confirm">S’eliminaran totes les partitures, llistes i anotacions. Aquesta acció no es pot desfer.</string>
+    <string name="please_wait">Un moment…</string>
+    <string name="about_description">Un lector de partitures ràpid, pensat per tocar en directe. Importa PDF i imatges, anota, crea llistes i passa pàgina amb pedals o tecles.</string>
+    <string name="about_privacy" formatted="false">100 % fora de línia: les teves partitures no surten mai del dispositiu.</string>
+    <string name="version_label">Versió %1$s</string>
+    <string name="made_with_love">Fet amb cura per a músics · VLC Sheets</string>
+
+    <!-- Messages -->
+    <string name="msg_import_failed">No s’ha pogut importar el fitxer</string>
+    <string name="msg_backup_ok">Còpia de seguretat creada</string>
+    <string name="msg_backup_error">No s’ha pogut crear la còpia</string>
+    <string name="msg_restore_ok">Biblioteca restaurada</string>
+    <string name="msg_restore_error">No s’ha pogut restaurar la còpia</string>
+    <string name="msg_library_cleared">Biblioteca buidada</string>
+    <string name="msg_error_generic">Alguna cosa no ha anat bé</string>
+    <string name="msg_setlist_created">Llista creada</string>
+    <string name="msg_setlist_deleted">Llista eliminada</string>
+    <string name="msg_collection_created">Col·lecció creada</string>
+    <string name="msg_collection_exists">Aquesta col·lecció ja existeix</string>
+    <string name="msg_collection_deleted">Col·lecció eliminada</string>
+    <plurals name="score_count">
+        <item quantity="one">%1$d partitura</item>
+        <item quantity="other">%1$d partitures</item>
+    </plurals>
+    <plurals name="collection_count">
+        <item quantity="one">%1$d col·lecció</item>
+        <item quantity="other">%1$d col·leccions</item>
+    </plurals>
+    <plurals name="song_count">
+        <item quantity="one">%1$d cançó</item>
+        <item quantity="other">%1$d cançons</item>
+    </plurals>
+    <plurals name="page_count">
+        <item quantity="one">%1$d pàgina</item>
+        <item quantity="other">%1$d pàgines</item>
+    </plurals>
+    <plurals name="setlist_count">
+        <item quantity="one">%1$d llista</item>
+        <item quantity="other">%1$d llistes</item>
+    </plurals>
+    <plurals name="msg_import_ok">
+        <item quantity="one">S’ha importat %1$d partitura</item>
+        <item quantity="other">S’han importat %1$d partitures</item>
+    </plurals>
+    <plurals name="msg_import_partial">
+        <item quantity="one">S’ha importat %1$d partitura i %2$d han fallat</item>
+        <item quantity="other">S’han importat %1$d partitures i %2$d han fallat</item>
+    </plurals>
+    <plurals name="msg_songs_deleted">
+        <item quantity="one">%1$d partitura eliminada</item>
+        <item quantity="other">%1$d partitures eliminades</item>
+    </plurals>
+    <plurals name="msg_added_to_setlist">
+        <item quantity="one">%1$d cançó afegida a la llista</item>
+        <item quantity="other">%1$d cançons afegides a la llista</item>
+    </plurals>
+    <string name="audio">Àudio</string>
+    <string name="audio_add">Afegeix un àudio</string>
+    <string name="audio_empty">Aquesta partitura encara no té cap àudio.</string>
+    <string name="audio_error">No s’ha pogut reproduir aquest àudio.</string>
+    <string name="audio_remove_title">Vols treure aquest àudio?</string>
+    <string name="crop_margins">Retalla els marges blancs</string>
+    <string name="two_pages_landscape">Dues pàgines en horitzontal</string>
+    <string name="half_page_turn">Passa mitja pàgina</string>
+    <string name="export_pdf">Exporta en PDF amb anotacions</string>
+    <string name="msg_export_ok">PDF exportat</string>
+    <string name="msg_export_error">No s’ha pogut exportar el PDF</string>
+    <string name="setting_tap_to_turn">Toca els costats per passar pàgina</string>
+    <string name="setting_tap_to_turn_desc">Esquerra, enrere; dreta, endavant. Al mig, mostra els botons.</string>
+    <string name="setting_next_key">Tecla del pedal: pàgina següent</string>
+    <string name="setting_prev_key">Tecla del pedal: pàgina anterior</string>
+    <string name="key_none">Cap. Toca per assignar-ne una</string>
+    <string name="key_capture_title">Prem la tecla</string>
+    <string name="key_capture_text">Prem ara el pedal o la tecla que vulguis fer servir.</string>
+    <string name="key_clear">Treu-la</string>
+    <string name="practice_speed">Velocitat</string>
+    <string name="loop">Bucle per practicar</string>
+    <string name="loop_start">Inici</string>
+    <string name="loop_end">Final</string>
+    <string name="loop_clear">Treu el bucle</string>
+    <string name="audio_marks">Passar pàgina amb l’àudio</string>
+    <string name="audio_mark_add">Afegeix un punt aquí (pàgina %1$d)</string>
+    <string name="audio_mark_item">%1$s → pàgina %2$d</string>
+    <string name="metronome_turn_pages">Passa pàgina cada</string>
+    <string name="metronome_turn_half_pages">Passa mitja pàgina cada</string>
+    <string name="metronome_turn_off">Mai</string>
+    <string name="count_in">Compte d’entrada (compassos)</string>
+    <string name="save_tempo">Desa el tempo i el compàs a la partitura</string>
+    <string name="practice_tempo">Al %1$d %%: %2$d bpm</string>
+    <plurals name="bars">
+        <item quantity="one">%1$d compàs</item>
+        <item quantity="other">%1$d compassos</item>
+    </plurals>
+    <string name="hide_annotations">Amaga les anotacions</string>
+    <string name="warm_paper">Paper càlid</string>
+    <string name="concert_mode">Mode concert</string>
+    <string name="concert_hint">Només es pot passar pàgina. Mantén premut el cadenat per sortir.</string>
+    <string name="concert_exit">Surt del mode concert</string>
+    <string name="jump_points">Punts de salt i botons</string>
+    <string name="jump_points_hint">Toca la pàgina on vols posar la marca. Toca una marca per treure-la.</string>
+    <string name="jump_target_title">Punt de salt</string>
+    <string name="jump_target_label">Salta a la pàgina</string>
+    <string name="mask_zones">Tapa zones</string>
+    <string name="mask_zones_hint">Arrossega per tapar un tros de la pàgina. Toca una zona tapada per destapar-la.</string>
+    <string name="field_year">Any</string>
+    <string name="field_duration">Durada (m:ss)</string>
+    <string name="sort_year">Any</string>
+    <string name="duration">durada</string>
+    <string name="setlist_note_title">Nota per a aquesta peça</string>
+    <string name="setlist_note_placeholder">To, comentaris…</string>
+    <string name="setting_left_hold">Mantenir premut a l’esquerra</string>
+    <string name="setting_right_hold">Mantenir premut a la dreta</string>
+    <string name="side_none">Res (passa pàgina)</string>
+    <string name="side_first_page">Primera pàgina</string>
+    <string name="side_last_page">Última pàgina</string>
+    <string name="side_prev_song">Partitura anterior</string>
+    <string name="side_next_song">Partitura següent</string>
+    <string name="side_audio">Engega o atura l’àudio</string>
+    <string name="side_metronome">Engega o atura el metrònom</string>
+    <string name="audio_button_make">Botó d’àudio: sona des de %1$s</string>
+    <string name="audio_button_hint">Per fer un botó d’àudio, obre l’Àudio i deixa’l al moment on ha de començar.</string>
+    <string name="export_share">Exporta en fitxer de VLC Sheets</string>
+    <string name="msg_share_ok">Fitxer exportat</string>
+    <string name="msg_share_error">No s’ha pogut exportar el fitxer</string>
+    <string name="tuner">Afinador</string>
+    <string name="tuner_permission">L’afinador necessita el micròfon. El so s’analitza a la tauleta i no s’envia enlloc.</string>
+    <string name="tuner_allow">Permet el micròfon</string>
+    <string name="tuner_listening">Toca una nota…</string>
+    <string name="tuner_a4">La = %1$d Hz</string>
+    <string-array name="note_names">
+        <item>Do</item><item>Do♯</item><item>Re</item><item>Mi♭</item><item>Mi</item><item>Fa</item>
+        <item>Fa♯</item><item>Sol</item><item>La♭</item><item>La</item><item>Si♭</item><item>Si</item>
+    </string-array>
+    <string name="handwriting_convert">Converteix la lletra a text</string>
+    <string name="handwriting_teach">Ensenya la teva lletra</string>
+    <string name="handwriting_teach_desc">Mostres per convertir números i símbols escrits a mà en text</string>
+    <string name="handwriting_no_samples">Primer ensenya-li la teva lletra (Ajustos → Ensenya la teva lletra)</string>
+    <string name="handwriting_none">No s’ha reconegut cap símbol: la lletra es queda com estava</string>
+    <string name="handwriting_hint">Escriu cada símbol 3–5 vegades, com ho faries damunt la partitura, i toca Desa després de cada un.</string>
+    <string name="handwriting_write_here">Escriu «%1$s» aquí</string>
+    <string name="handwriting_forget">Oblida «%1$s»</string>
+    <plurals name="handwriting_converted">
+        <item quantity="one">%1$d símbol convertit en text</item>
+        <item quantity="other">%1$d símbols convertits en text</item>
+    </plurals>
+    <plurals name="handwriting_samples">
+        <item quantity="one">%1$d mostra</item>
+        <item quantity="other">%1$d mostres</item>
+    </plurals>
+</resources>
