@@ -108,4 +108,23 @@ class HandwritingTest {
         assertEquals(Pt(0.10f, 0.30f), joined[0].points[0])
         assertEquals(Pt(0.12f, 0.32f), joined[0].points[1])
     }
+
+    @Test
+    fun acceptsALooserAOnlyRightAfterADigit() {
+        fun ring(n: Int = 30) = List(n) { k -> val t = 2 * PI * k / (n - 1); Pt(0.5f + 0.5f * cos(t).toFloat(), 0.5f + 0.5f * sin(t).toFloat()) }
+        val aShape = listOf(ring() + line(1f, 0.5f, 1f, 1f))
+        val taught = samples + List(3) { InkSample("a", listOf(wobble(aShape.first()))) }
+        // A sloppy "a": the ring is squashed, so on its own it is too far from the samples.
+        val sloppy = listOf(ring().map { Pt(it.x, 0.3f + it.y * 0.7f) } + line(1f, 0.6f, 0.6f, 1f))
+        fun place(shape: List<List<Pt>>, x: Float, size: Float = 0.02f) = shape.mapIndexed { i, pts ->
+            Stroke("$x-$i", 0, pts.map { Pt(x + it.x * size, 0.3f + it.y * size) }, 0xFF000000, 2f)
+        }
+        val digit = Stroke("d", 0, listOf(Pt(0.10f, 0.30f), Pt(0.115f, 0.32f)), 0xFF000000, 2f, text = "4")
+        val near = Handwriting.convert(place(sloppy, 0.118f), taught, 1f, listOf(digit)).second
+        val alone = Handwriting.convert(place(sloppy, 0.5f), taught, 1f, listOf(digit)).second
+        val (_, d) = Handwriting.classify(sloppy, taught)!!
+        assertTrue("too close to test: $d", d > Handwriting.MAX_DISTANCE)
+        assertEquals(listOf("a"), near.map { it.text })
+        assertTrue(alone.isEmpty())
+    }
 }

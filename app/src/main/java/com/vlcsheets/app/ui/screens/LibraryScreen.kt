@@ -9,6 +9,15 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.activity.compose.BackHandler
+import androidx.compose.material.icons.rounded.Archive
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.CreateNewFolder
+import androidx.compose.material.icons.rounded.SelectAll
+import com.vlcsheets.app.data.LibraryRepository
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -113,8 +122,19 @@ fun LibraryScreen(
     var sortMenu by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<Song?>(null) }
     var deleteTarget by remember { mutableStateOf<Song?>(null) }
-    var setlistTarget by remember { mutableStateOf<Song?>(null) }
+    var setlistTarget by remember { mutableStateOf<List<String>?>(null) }
     var showTuner by remember { mutableStateOf(false) }
+    // Long press starts picking several scores; tapping then adds or removes one.
+    var picked by remember { mutableStateOf(setOf<String>()) }
+    val picking = picked.isNotEmpty()
+    var deletePicked by remember { mutableStateOf(false) }
+    var collectionSheet by remember { mutableStateOf(false) }
+    fun toggle(song: Song) { picked = if (song.id in picked) picked - song.id else picked + song.id }
+    BackHandler(enabled = picking) { picked = emptySet() }
+    val shareLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
+        if (uri != null) vm.exportShare(uri, songs.filter { it.id in picked }.map { it.id })
+        picked = emptySet()
+    }
 
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenMultipleDocuments(),
@@ -124,7 +144,23 @@ fun LibraryScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            LibraryHeader(
+            if (picking) {
+                val allFavorite = songs.filter { it.id in picked }.all { it.favorite }
+                SelectionBar(
+                    count = picked.size,
+                    allFavorite = allFavorite,
+                    onClose = { picked = emptySet() },
+                    onSelectAll = { picked = songs.map { it.id }.toSet() },
+                    onFavorite = { vm.setFavorite(picked, !allFavorite); picked = emptySet() },
+                    onAddToSetlist = { setlistTarget = songs.filter { it.id in picked }.map { it.id } },
+                    onAddToCollection = { collectionSheet = true },
+                    onShare = {
+                        val name = if (picked.size == 1) songs.firstOrNull { it.id in picked }?.title?.ifBlank { null } else null
+                        shareLauncher.launch("${name ?: "scores"}.${LibraryRepository.SHARE_EXTENSION}")
+                    },
+                    onDelete = { deletePicked = true },
+                )
+            } else LibraryHeader(
                 songCount = library.songs.size,
                 collectionCount = library.collections.size,
                 grid = grid,
@@ -301,10 +337,12 @@ fun LibraryScreen(
                             SongGridCard(
                                 song = song,
                                 modifier = Modifier.animateItem(),
-                                onClick = { onOpenSong(song) },
+                                picked = song.id in picked,
+                                onClick = { if (picking) toggle(song) else onOpenSong(song) },
+                                onLongClick = { toggle(song) },
                                 onEdit = { editing = song },
                                 onDelete = { deleteTarget = song },
-                                onAddToSetlist = { setlistTarget = song },
+                                onAddToSetlist = { setlistTarget = listOf(song.id) },
                                 onToggleFavorite = { vm.toggleFavorite(song) },
                             )
                         }
@@ -321,10 +359,12 @@ fun LibraryScreen(
                             SongListRow(
                                 song = song,
                                 modifier = Modifier.animateItem(),
-                                onClick = { onOpenSong(song) },
+                                picked = song.id in picked,
+                                onClick = { if (picking) toggle(song) else onOpenSong(song) },
+                                onLongClick = { toggle(song) },
                                 onEdit = { editing = song },
                                 onDelete = { deleteTarget = song },
-                                onAddToSetlist = { setlistTarget = song },
+                                onAddToSetlist = { setlistTarget = listOf(song.id) },
                                 onToggleFavorite = { vm.toggleFavorite(song) },
                             )
                         }
@@ -335,7 +375,7 @@ fun LibraryScreen(
 
         // An empty screen has its own big button; the floating one comes in once there is content.
         AnimatedVisibility(
-            visible = library.songs.isNotEmpty(),
+            visible = library.songs.isNotEmpty() && !picking,
             modifier = Modifier.align(Alignment.BottomEnd),
             enter = fadeIn() + scaleIn(initialScale = 0.8f),
             exit = fadeOut() + scaleOut(targetScale = 0.8f),
@@ -382,7 +422,31 @@ fun LibraryScreen(
         )
     }
 
-    setlistTarget?.let { song ->
+    if (deletePicked) {
+        ConfirmDialog(
+            title = stringResource(R.string.delete_songs_title),
+            text = pluralStringResource(R.plurals.delete_songs_text, picked.size, picked.size),
+            confirmLabel = stringResource(R.string.action_delete),
+            destructive = true,
+            onConfirm = { vm.deleteSongs(picked); picked = emptySet() },
+            onDismiss = { deletePicked = false },
+        )
+    }
+
+    if (collectionSheet) {
+        PickSheet(
+            title = stringResource(R.string.add_to_collection),
+            empty = stringResource(R.string.no_collections),
+            items = library.collections.map { c ->
+                val n = library.songs.count { c.name in it.collections }
+                c.name to pluralStringResource(R.plurals.song_count, n, n)
+            },
+            onPick = { name -> vm.addToCollection(picked, name); picked = emptySet(); collectionSheet = false },
+            onDismiss = { collectionSheet = false },
+        )
+    }
+
+    setlistTarget?.let { ids ->
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(onDismissRequest = { setlistTarget = null }, sheetState = sheetState) {
             Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
@@ -405,8 +469,9 @@ fun LibraryScreen(
                                 .clip(RoundedCornerShape(14.dp))
                                 .combinedClickable(
                                     onClick = {
-                                        vm.addSongsToSetlist(setlist, listOf(song.id))
+                                        vm.addSongsToSetlist(setlist, ids)
                                         setlistTarget = null
+                                        picked = emptySet()
                                     },
                                     onLongClick = {},
                                 )
@@ -572,7 +637,9 @@ private fun SongActions(
 private fun SongGridCard(
     song: Song,
     modifier: Modifier = Modifier,
+    picked: Boolean,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onAddToSetlist: () -> Unit,
@@ -589,7 +656,7 @@ private fun SongGridCard(
             .clip(RoundedCornerShape(22.dp, 22.dp, 8.dp, 8.dp))
             .combinedClickable(
                 onClick = onClick,
-                onLongClick = { menu = true },
+                onLongClick = onLongClick,
             ),
     ) {
         Box {
@@ -610,6 +677,7 @@ private fun SongGridCard(
             if (song.hasAnnotations) {
                 AnnotationBadge(modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp))
             }
+            if (picked) PickedMark(Modifier.matchParentSize().border(3.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(22.dp)))
             SongActions(
                 expanded = menu,
                 song = song,
@@ -645,7 +713,9 @@ private fun SongGridCard(
 private fun SongListRow(
     song: Song,
     modifier: Modifier = Modifier,
+    picked: Boolean,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onAddToSetlist: () -> Unit,
@@ -662,19 +732,23 @@ private fun SongListRow(
             modifier = Modifier
                 .pressScale()
                 .fillMaxWidth()
-                .combinedClickable(onClick = onClick, onLongClick = { menu = true }),
+                .then(if (picked) Modifier.border(3.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(20.dp)) else Modifier)
+                .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         ) {
             Row(
                 modifier = Modifier.padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                SongThumbnail(
-                    song = song,
-                    modifier = Modifier
-                        .width(56.dp)
-                        .height(74.dp),
-                    cornerRadius = 14.dp,
-                )
+                Box {
+                    SongThumbnail(
+                        song = song,
+                        modifier = Modifier
+                            .width(56.dp)
+                            .height(74.dp),
+                        cornerRadius = 14.dp,
+                    )
+                    if (picked) PickedMark(Modifier.matchParentSize())
+                }
                 Spacer(Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -724,5 +798,97 @@ private fun SongListRow(
             onAddToSetlist = onAddToSetlist,
             onToggleFavorite = onToggleFavorite,
         )
+    }
+}
+
+/** The tick shown on a picked score. */
+@Composable
+private fun PickedMark(modifier: Modifier) {
+    Box(modifier.padding(6.dp), contentAlignment = Alignment.TopStart) {
+        Icon(
+            Icons.Rounded.CheckCircle,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(28.dp).background(MaterialTheme.colorScheme.surface, CircleShape),
+        )
+    }
+}
+
+/** Takes the place of the header while scores are picked: what to do with all of them. */
+@Composable
+private fun SelectionBar(
+    count: Int,
+    allFavorite: Boolean,
+    onClose: () -> Unit,
+    onSelectAll: () -> Unit,
+    onFavorite: () -> Unit,
+    onAddToSetlist: () -> Unit,
+    onAddToCollection: () -> Unit,
+    onShare: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, top = 20.dp, bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onClose) { Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_close)) }
+        Text(
+            pluralStringResource(R.plurals.picked_count, count, count),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        IconButton(onClick = onSelectAll) { Icon(Icons.Rounded.SelectAll, contentDescription = stringResource(R.string.action_select_all)) }
+        IconButton(onClick = onFavorite) {
+            Icon(
+                if (allFavorite) Icons.Rounded.FavoriteBorder else Icons.Rounded.Favorite,
+                contentDescription = stringResource(if (allFavorite) R.string.action_unfavorite else R.string.action_favorite),
+            )
+        }
+        IconButton(onClick = onAddToSetlist) { Icon(Icons.Rounded.PlaylistAdd, contentDescription = stringResource(R.string.add_to_setlist)) }
+        IconButton(onClick = onAddToCollection) { Icon(Icons.Rounded.CreateNewFolder, contentDescription = stringResource(R.string.add_to_collection)) }
+        IconButton(onClick = onShare) { Icon(Icons.Rounded.Archive, contentDescription = stringResource(R.string.export_share)) }
+        IconButton(onClick = onDelete) {
+            Icon(Icons.Rounded.Delete, contentDescription = stringResource(R.string.action_delete), tint = MaterialTheme.colorScheme.error)
+        }
+    }
+}
+
+/** A bottom sheet to pick one collection. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PickSheet(
+    title: String,
+    empty: String,
+    items: List<Pair<String, String>>,
+    onPick: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
+            Text(title, style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(12.dp))
+            if (items.isEmpty()) Text(empty, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            items.forEach { (name, detail) ->
+                Row(
+                    modifier = Modifier
+                        .pressScale()
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .clickable { onPick(name) }
+                        .padding(vertical = 14.dp, horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Rounded.CreateNewFolder, contentDescription = null)
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text(name, style = MaterialTheme.typography.titleSmall)
+                        Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+        }
     }
 }

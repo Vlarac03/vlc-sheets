@@ -489,6 +489,11 @@ class LibraryRepository(private val context: Context) {
         data.copy(songs = data.songs.map { if (it.id == songId) block(it) else it })
     }
 
+    /** Changes several songs in one write. */
+    suspend fun editSongs(ids: Set<String>, block: (Song) -> Song) = mutate { data ->
+        data.copy(songs = data.songs.map { if (it.id in ids) block(it) else it })
+    }
+
     suspend fun setFavorite(songId: String, favorite: Boolean) = mutate { data ->
         data.copy(songs = data.songs.map { if (it.id == songId) it.copy(favorite = favorite) else it })
     }

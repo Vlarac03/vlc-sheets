@@ -46,11 +46,18 @@ object Handwriting {
      * Returns the ids of the strokes to remove and the text annotations that replace them.
      * [aspect] is the page's width / height, since stroke points are 0..1 of each side.
      */
-    fun convert(pageStrokes: List<Stroke>, allSamples: List<InkSample>, aspect: Float): Pair<Set<String>, List<Stroke>> {
+    fun convert(
+        pageStrokes: List<Stroke>,
+        allSamples: List<InkSample>,
+        aspect: Float,
+        texts: List<Stroke> = emptyList(),
+    ): Pair<Set<String>, List<Stroke>> {
         // Samples of symbols no longer taught (p, m, f… from older versions) are kept but not used.
         val samples = allSamples.filter { it.symbol in HANDWRITING_SYMBOLS }
+        val aSamples = samples.filter { it.symbol == "a" }
         val removed = mutableSetOf<String>()
         val added = mutableListOf<Stroke>()
+        val unsure = mutableListOf<List<Stroke>>()
         for (group in groupCharacters(pageStrokes, aspect)) {
             val box = bounds(group.flatMap { it.points })
             val w = (box[2] - box[0]) * aspect
@@ -58,19 +65,46 @@ object Handwriting {
             if (w > MAX_CHAR_SIZE || h > MAX_CHAR_SIZE || (w < MIN_CHAR_SIZE && h < MIN_CHAR_SIZE)) continue
             val real = group.map { s -> s.points.map { Pt(it.x * aspect, it.y) } }
             val (symbol, distance) = classify(real, samples) ?: continue
-            if (distance > MAX_DISTANCE) continue
-            val first = group.first()
+            if (distance > MAX_DISTANCE) {
+                unsure += group
+                continue
+            }
             removed += group.map { it.id }
-            added += Stroke(
-                id = UUID.randomUUID().toString(),
-                page = first.page,
-                points = listOf(Pt(box[0], box[1]), Pt(box[2], box[3])),
-                color = first.color,
-                width = first.width,
-                text = symbol,
-            )
+            added += textFor(group, box, symbol)
+        }
+        // Right after a digit an "a" is expected (4a = 4th position), so it may look less like the samples.
+        val digits = (texts + added).filter { it.text.length == 1 && it.text[0].isDigit() }
+        for (group in unsure) {
+            val box = bounds(group.flatMap { it.points })
+            val real = group.map { s -> s.points.map { Pt(it.x * aspect, it.y) } }
+            val distance = classify(real, aSamples)?.second ?: continue
+            val page = group.first().page
+            if (distance <= MAX_DISTANCE * 1.6f && digits.any { it.page == page && followsDigit(it.points, box, aspect) }) {
+                removed += group.map { it.id }
+                added += textFor(group, box, "a")
+            }
         }
         return removed to added
+    }
+
+    private fun textFor(group: List<Stroke>, box: FloatArray, symbol: String): Stroke {
+        val first = group.first()
+        return Stroke(
+            id = UUID.randomUUID().toString(),
+            page = first.page,
+            points = listOf(Pt(box[0], box[1]), Pt(box[2], box[3])),
+            color = first.color,
+            width = first.width,
+            text = symbol,
+        )
+    }
+
+    /** True when the box (minX, minY, maxX, maxY) sits just right of a digit whose corners are [digit]. */
+    private fun followsDigit(digit: List<Pt>, box: FloatArray, aspect: Float): Boolean {
+        val (d0, d1) = digit
+        val h = d1.y - d0.y
+        val gap = (box[0] - d1.x) * aspect
+        return gap in -0.3f * h..0.8f * h && box[1] < d1.y && box[3] > d0.y
     }
 
     /** A digit with an "a" right after it is one position mark ("4a"), not two texts. */
@@ -78,12 +112,9 @@ object Handwriting {
         val out = texts.toMutableList()
         for (a in texts.filter { it.text == "a" }) {
             val (a0, a1) = a.points
-            val digit = out.filter { it.page == a.page && it.text.length == 1 && it.text[0].isDigit() }.firstOrNull { d ->
-                val (d0, d1) = d.points
-                val h = d1.y - d0.y
-                val gap = (a0.x - d1.x) * aspect
-                gap in -0.3f * h..0.8f * h && a0.y < d1.y && a1.y > d0.y
-            } ?: continue
+            val box = floatArrayOf(a0.x, a0.y, a1.x, a1.y)
+            val digit = out.filter { it.page == a.page && it.text.length == 1 && it.text[0].isDigit() }
+                .firstOrNull { followsDigit(it.points, box, aspect) } ?: continue
             val (d0, d1) = digit.points
             out -= a
             out[out.indexOf(digit)] = digit.copy(

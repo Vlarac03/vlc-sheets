@@ -280,7 +280,7 @@
     <string name="handwriting_teach_desc">Samples to turn handwritten numbers and symbols into text</string>
     <string name="handwriting_no_samples">First teach it your handwriting (Settings → Teach your handwriting)</string>
     <string name="handwriting_none">No symbol recognized: the handwriting stays as it was</string>
-    <string name="handwriting_hint">Write each symbol 3–5 times, as you would on the score, and tap Save after each one.</string>
+    <string name="handwriting_hint">Write each symbol 10 times, as you would on the score, and tap Save after each one.</string>
     <string name="handwriting_write_here">Write “%1$s” here</string>
     <string name="handwriting_forget">Forget “%1$s”</string>
     <string name="handwriting_delete_sample">Delete this sample</string>
@@ -299,5 +299,17 @@
     <plurals name="handwriting_samples">
         <item quantity="one">%1$d sample</item>
         <item quantity="other">%1$d samples</item>
+    </plurals>
+    <string name="add_to_collection">Add to a collection</string>
+    <string name="no_collections">There are no collections yet. Create one in Collections.</string>
+    <string name="action_select_all">Select all</string>
+    <string name="delete_songs_title">Delete the scores?</string>
+    <plurals name="picked_count">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <plurals name="delete_songs_text">
+        <item quantity="one">%d score and its annotations will be deleted. This cannot be undone.</item>
+        <item quantity="other">%d scores and their annotations will be deleted. This cannot be undone.</item>
     </plurals>
 </resources>

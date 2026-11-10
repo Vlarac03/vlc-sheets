@@ -290,7 +290,7 @@
     <string name="handwriting_teach_desc">Muestras para convertir números y símbolos escritos a mano en texto</string>
     <string name="handwriting_no_samples">Primero enséñale tu letra (Ajustes → Enseña tu letra)</string>
     <string name="handwriting_none">No se ha reconocido ningún símbolo: la letra se queda como estaba</string>
-    <string name="handwriting_hint">Escribe cada símbolo 3–5 veces, como lo harías sobre la partitura, y toca Guardar después de cada uno.</string>
+    <string name="handwriting_hint">Escribe cada símbolo 10 veces, como lo harías sobre la partitura, y toca Guardar después de cada uno.</string>
     <string name="handwriting_write_here">Escribe «%1$s» aquí</string>
     <string name="handwriting_forget">Olvida «%1$s»</string>
     <string name="handwriting_delete_sample">Borra esta muestra</string>
@@ -311,5 +311,19 @@
         <item quantity="one">%1$d muestra</item>
         <item quantity="other">%1$d muestras</item>
         <item quantity="many">%1$d muestras</item>
+    </plurals>
+    <string name="add_to_collection">Añade a una colección</string>
+    <string name="no_collections">Aún no hay ninguna colección. Crea una en Colecciones.</string>
+    <string name="action_select_all">Selecciona todas</string>
+    <string name="delete_songs_title">¿Eliminar las partituras?</string>
+    <plurals name="picked_count">
+        <item quantity="one">%d seleccionada</item>
+        <item quantity="many">%d seleccionadas</item>
+        <item quantity="other">%d seleccionadas</item>
+    </plurals>
+    <plurals name="delete_songs_text">
+        <item quantity="one">Se eliminará %d partitura y sus anotaciones. Esta acción no se puede deshacer.</item>
+        <item quantity="many">Se eliminarán %d partituras y sus anotaciones. Esta acción no se puede deshacer.</item>
+        <item quantity="other">Se eliminarán %d partituras y sus anotaciones. Esta acción no se puede deshacer.</item>
     </plurals>
 </resources>

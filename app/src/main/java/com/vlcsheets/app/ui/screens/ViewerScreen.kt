@@ -862,6 +862,46 @@ private fun ViewerContent(
             }
         }
 
+        // A small player while reading (the bars are hidden): play/pause, the time, and the full audio panel.
+        AnimatedVisibility(
+            visible = audioFiles.isNotEmpty() && !chromeVisible && !annotationMode && !concertMode && editMode == null,
+            enter = fadeIn() + scaleIn(initialScale = 0.8f),
+            exit = fadeOut() + scaleOut(targetScale = 0.8f),
+            modifier = Modifier.align(Alignment.BottomStart),
+        ) {
+            var shownMs by remember { mutableIntStateOf(0) }
+            LaunchedEffect(audio.playing, audio.file) {
+                shownMs = audio.positionMs
+                while (audio.playing) {
+                    delay(500)
+                    shownMs = audio.positionMs
+                }
+            }
+            Surface(
+                color = Color(0xB30B0D13),
+                shape = CircleShape,
+                modifier = Modifier.navigationBarsPadding().padding(12.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 4.dp)) {
+                    IconButton(onClick = {
+                        if (audio.file != null || audioFiles.firstOrNull()?.let { audio.load(it) } == true) audio.toggle()
+                    }) {
+                        Icon(
+                            if (audio.playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                            contentDescription = stringResource(if (audio.playing) R.string.stop else R.string.start),
+                            tint = if (audio.playing) Brass else Color.White,
+                        )
+                    }
+                    if (audio.file != null) {
+                        Text(formatTime(shownMs.toFloat()), color = Color.White, style = MaterialTheme.typography.labelLarge)
+                    }
+                    IconButton(onClick = { showAudio = true }) {
+                        Icon(Icons.Rounded.MusicNote, contentDescription = stringResource(R.string.audio), tint = Color.White)
+                    }
+                }
+            }
+        }
+
         AnimatedVisibility(
             visible = annotationMode,
             enter = fadeIn() + slideInVertically { it },

@@ -292,7 +292,7 @@
     <string name="handwriting_teach_desc">Mostres per convertir números i símbols escrits a mà en text</string>
     <string name="handwriting_no_samples">Primer ensenya-li la teva lletra (Ajustos → Ensenya la teva lletra)</string>
     <string name="handwriting_none">No s’ha reconegut cap símbol: la lletra es queda com estava</string>
-    <string name="handwriting_hint">Escriu cada símbol 3–5 vegades, com ho faries damunt la partitura, i toca Desa després de cada un.</string>
+    <string name="handwriting_hint">Escriu cada símbol 10 vegades, com ho faries damunt la partitura, i toca Desa després de cada un.</string>
     <string name="handwriting_write_here">Escriu «%1$s» aquí</string>
     <string name="handwriting_forget">Oblida «%1$s»</string>
     <string name="handwriting_delete_sample">Esborra aquesta mostra</string>
@@ -311,5 +311,17 @@
     <plurals name="handwriting_samples">
         <item quantity="one">%1$d mostra</item>
         <item quantity="other">%1$d mostres</item>
+    </plurals>
+    <string name="add_to_collection">Afegeix a una col·lecció</string>
+    <string name="no_collections">Encara no hi ha cap col·lecció. Crea’n una a Col·leccions.</string>
+    <string name="action_select_all">Selecciona-les totes</string>
+    <string name="delete_songs_title">Eliminar les partitures?</string>
+    <plurals name="picked_count">
+        <item quantity="one">%d seleccionada</item>
+        <item quantity="other">%d seleccionades</item>
+    </plurals>
+    <plurals name="delete_songs_text">
+        <item quantity="one">S’eliminarà %d partitura i les seves anotacions. Aquesta acció no es pot desfer.</item>
+        <item quantity="other">S’eliminaran %d partitures i les seves anotacions. Aquesta acció no es pot desfer.</item>
     </plurals>
 </resources>

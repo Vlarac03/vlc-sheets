@@ -60,7 +60,7 @@ import com.vlcsheets.app.data.HANDWRITING_SYMBOLS
 import com.vlcsheets.app.data.InkSample
 import com.vlcsheets.app.data.Pt
 
-private const val SAMPLES_WANTED = 5
+private const val SAMPLES_WANTED = 10
 
 /** Teaches the recognizer the user's handwriting: each symbol written a few times in a box. */
 @Composable
@@ -183,7 +183,8 @@ fun HandwritingTrainer(vm: MainViewModel, onDismiss: () -> Unit) {
                         HANDWRITING_SYMBOLS.getOrNull(HANDWRITING_SYMBOLS.indexOf(symbol) + 1)?.let { symbol = it }
                     }
                 },
-                enabled = strokes.isNotEmpty(),
+                // More than 10 samples adds little and slows the matching down.
+                enabled = strokes.isNotEmpty() && count < SAMPLES_WANTED,
             ) {
                 Text(stringResource(R.string.action_save))
             }
@@ -201,19 +202,20 @@ fun HandwritingTrainer(vm: MainViewModel, onDismiss: () -> Unit) {
                 val spacing = Arrangement.spacedBy(14.dp)
                 val half = maxWidth / 2
                 if (maxWidth > maxHeight) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(
                             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = spacing,
                         ) { top(); bottom() }
-                        pad(Modifier.fillMaxHeight().widthIn(max = half).aspectRatio(1f, matchHeightConstraintsFirst = true))
+                        // Half the screen height: big enough to write, without taking over the screen.
+                        pad(Modifier.fillMaxHeight(0.5f).widthIn(max = half).aspectRatio(1f, matchHeightConstraintsFirst = true))
                     }
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = spacing) {
                         top()
                         // Takes only the height left, so the buttons below always fit.
-                        pad(Modifier.widthIn(max = 320.dp).weight(1f, fill = false).aspectRatio(1f, matchHeightConstraintsFirst = true))
+                        pad(Modifier.widthIn(max = 370.dp).weight(1f, fill = false).aspectRatio(1f, matchHeightConstraintsFirst = true))
                         bottom()
                     }
                 }

@@ -219,6 +219,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         pluralMessage(R.plurals.msg_songs_deleted, ids.size)
     }
 
+    fun setFavorite(ids: Set<String>, favorite: Boolean) = viewModelScope.launch {
+        repository.editSongs(ids) { it.copy(favorite = favorite) }
+    }
+
+    fun addToCollection(ids: Set<String>, collection: String) = viewModelScope.launch {
+        repository.editSongs(ids) { s -> if (collection in s.collections) s else s.copy(collections = s.collections + collection) }
+    }
+
     fun markOpened(songId: String) = viewModelScope.launch { repository.markOpened(songId) }
 
     fun saveLastPage(songId: String, page: Int) = viewModelScope.launch {
@@ -275,7 +283,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             return@launch
         }
         val (removeIds, added) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
-            com.vlcsheets.app.data.Handwriting.convert(song.annotations.filter(pick), samples, song.pageAspect)
+            com.vlcsheets.app.data.Handwriting.convert(
+                song.annotations.filter(pick), samples, song.pageAspect, song.annotations.filter { it.text.isNotEmpty() },
+            )
         }
         if (added.isEmpty()) {
             if (!auto) message(R.string.handwriting_none)
