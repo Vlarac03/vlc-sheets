@@ -195,4 +195,4 @@ Versió 1.0.0. Cada versió és a [Releases](../../releases).
 
 ---
 
-<p align="center">Desenvolupat per <a href="https://github.com/Vlarac03">Vlarac</a></p>
+<p align="center">Developed by <a href="https://github.com/Vlarac03">Vlarac</a></p>

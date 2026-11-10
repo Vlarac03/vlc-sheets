@@ -19,9 +19,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * Low level helpers to inspect and rasterise score documents without any
- * third-party rendering library. Uses the platform PdfRenderer so the app
- * stays fully offline and dependency-light.
+ * Reads and rasterises score documents with Android's PdfRenderer (no extra library).
  */
 object PdfTools {
 

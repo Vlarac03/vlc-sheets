@@ -1,6 +1,9 @@
 package com.vlcsheets.app.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -69,129 +72,149 @@ fun HandwritingTrainer(vm: MainViewModel, onDismiss: () -> Unit) {
     val live = remember { mutableStateListOf<Offset>() }
     val count = counts[symbol] ?: 0
 
+    // The writing box, sized by the layout: beside the controls in landscape, under them in portrait.
+    val pad: @Composable (Modifier) -> Unit = { size ->
+        Box(
+            modifier = size
+                .background(Color.White, MaterialTheme.shapes.medium)
+                .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.medium),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (strokes.isEmpty() && live.isEmpty()) {
+                Text(
+                    stringResource(R.string.handwriting_write_here, symbol),
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+            Canvas(
+                modifier = Modifier.fillMaxSize().pointerInput(Unit) {
+                    // Pen or finger: here every touch writes.
+                    awaitEachGesture {
+                        val down = awaitFirstDown()
+                        live.clear()
+                        live += down.position
+                        while (true) {
+                            val change = awaitPointerEvent().changes.firstOrNull { it.id == down.id } ?: break
+                            live += change.position
+                            change.consume()
+                            if (!change.pressed) break
+                        }
+                        strokes += live.toList()
+                        live.clear()
+                    }
+                },
+            ) {
+                val ink = DrawScopeStroke(width = 4.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                (strokes + listOf(live.toList())).filter { it.isNotEmpty() }.forEach { pts ->
+                    val path = Path().apply {
+                        moveTo(pts[0].x, pts[0].y)
+                        pts.drop(1).forEach { lineTo(it.x, it.y) }
+                        if (pts.size == 1) lineTo(pts[0].x + 0.1f, pts[0].y)
+                    }
+                    drawPath(path, Color.Black, style = ink)
+                }
+            }
+        }
+    }
+    val top: @Composable () -> Unit = {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                stringResource(R.string.handwriting_teach),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = onDismiss) {
+                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_close))
+            }
+        }
+        Text(
+            stringResource(R.string.handwriting_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            HANDWRITING_SYMBOLS.forEach { s ->
+                FilterChip(
+                    selected = s == symbol,
+                    onClick = { symbol = s; strokes.clear() },
+                    // The symbol, then how many samples it has, small and apart so "1" and "0" never read as "10".
+                    label = {
+                        Text(s, fontWeight = if ((counts[s] ?: 0) >= 3) FontWeight.Bold else FontWeight.Normal)
+                        Text(
+                            "·${counts[s] ?: 0}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 4.dp),
+                        )
+                    },
+                )
+            }
+        }
+        Text(
+            pluralStringResource(R.plurals.handwriting_samples, count, count),
+            style = MaterialTheme.typography.labelLarge,
+        )
+        // What was saved for this symbol, so a wrong sample can be deleted on its own.
+        // The row keeps its height when empty, so the box below does not jump after the first save.
+        val saved = library.ink.filter { it.symbol == symbol }
+        Row(
+            modifier = Modifier.height(64.dp).horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            saved.forEach { sample -> SampleThumb(sample) { vm.removeInkSample(sample) } }
+        }
+    }
+    val bottom: @Composable () -> Unit = {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(onClick = { strokes.clear() }, enabled = strokes.isNotEmpty()) {
+                Text(stringResource(R.string.action_clear))
+            }
+            Button(
+                onClick = {
+                    vm.addInkSample(InkSample(symbol, strokes.map { s -> s.map { Pt(it.x, it.y) } }))
+                    strokes.clear()
+                    // Enough samples: move on to the next symbol.
+                    if (count + 1 >= SAMPLES_WANTED) {
+                        HANDWRITING_SYMBOLS.getOrNull(HANDWRITING_SYMBOLS.indexOf(symbol) + 1)?.let { symbol = it }
+                    }
+                },
+                enabled = strokes.isNotEmpty(),
+            ) {
+                Text(stringResource(R.string.action_save))
+            }
+        }
+        if (count > 0) {
+            TextButton(onClick = { vm.forgetInkSamples(symbol) }) {
+                Text(stringResource(R.string.handwriting_forget, symbol), color = MaterialTheme.colorScheme.error)
+            }
+        }
+    }
+
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        stringResource(R.string.handwriting_teach),
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.weight(1f),
-                    )
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.action_close))
+            BoxWithConstraints(Modifier.fillMaxSize().padding(20.dp)) {
+                val spacing = Arrangement.spacedBy(14.dp)
+                val half = maxWidth / 2
+                if (maxWidth > maxHeight) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                        Column(
+                            modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = spacing,
+                        ) { top(); bottom() }
+                        pad(Modifier.fillMaxHeight().widthIn(max = half).aspectRatio(1f, matchHeightConstraintsFirst = true))
                     }
-                }
-                Text(
-                    stringResource(R.string.handwriting_hint),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    HANDWRITING_SYMBOLS.forEach { s ->
-                        FilterChip(
-                            selected = s == symbol,
-                            onClick = { symbol = s; strokes.clear() },
-                            // The symbol, then how many samples it has, small and apart so "1" and "0" never read as "10".
-                            label = {
-                                Text(s, fontWeight = if ((counts[s] ?: 0) >= 3) FontWeight.Bold else FontWeight.Normal)
-                                Text(
-                                    "·${counts[s] ?: 0}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(start = 4.dp),
-                                )
-                            },
-                        )
-                    }
-                }
-                Text(
-                    pluralStringResource(R.plurals.handwriting_samples, count, count),
-                    style = MaterialTheme.typography.labelLarge,
-                )
-                // What was saved for this symbol, so a wrong sample can be deleted on its own.
-                // The row keeps its height when empty, so the box below does not jump after the first save.
-                val saved = library.ink.filter { it.symbol == symbol }
-                Row(
-                    modifier = Modifier.height(64.dp).horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    saved.forEach { sample -> SampleThumb(sample) { vm.removeInkSample(sample) } }
-                }
-                Box(
-                    modifier = Modifier
-                        .widthIn(max = 420.dp)
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .background(Color.White, MaterialTheme.shapes.medium)
-                        .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.medium),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (strokes.isEmpty() && live.isEmpty()) {
-                        Text(
-                            stringResource(R.string.handwriting_write_here, symbol),
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
-                    Canvas(
-                        modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                            // Pen or finger: here every touch writes.
-                            awaitEachGesture {
-                                val down = awaitFirstDown()
-                                live.clear()
-                                live += down.position
-                                while (true) {
-                                    val change = awaitPointerEvent().changes.firstOrNull { it.id == down.id } ?: break
-                                    live += change.position
-                                    change.consume()
-                                    if (!change.pressed) break
-                                }
-                                strokes += live.toList()
-                                live.clear()
-                            }
-                        },
-                    ) {
-                        val ink = DrawScopeStroke(width = 4.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-                        (strokes + listOf(live.toList())).filter { it.isNotEmpty() }.forEach { pts ->
-                            val path = Path().apply {
-                                moveTo(pts[0].x, pts[0].y)
-                                pts.drop(1).forEach { lineTo(it.x, it.y) }
-                                if (pts.size == 1) lineTo(pts[0].x + 0.1f, pts[0].y)
-                            }
-                            drawPath(path, Color.Black, style = ink)
-                        }
-                    }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(onClick = { strokes.clear() }, enabled = strokes.isNotEmpty()) {
-                        Text(stringResource(R.string.action_clear))
-                    }
-                    Button(
-                        onClick = {
-                            vm.addInkSample(InkSample(symbol, strokes.map { s -> s.map { Pt(it.x, it.y) } }))
-                            strokes.clear()
-                            // Enough samples: move on to the next symbol.
-                            if (count + 1 >= SAMPLES_WANTED) {
-                                HANDWRITING_SYMBOLS.getOrNull(HANDWRITING_SYMBOLS.indexOf(symbol) + 1)?.let { symbol = it }
-                            }
-                        },
-                        enabled = strokes.isNotEmpty(),
-                    ) {
-                        Text(stringResource(R.string.action_save))
-                    }
-                }
-                if (count > 0) {
-                    TextButton(onClick = { vm.forgetInkSamples(symbol) }) {
-                        Text(stringResource(R.string.handwriting_forget, symbol), color = MaterialTheme.colorScheme.error)
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = spacing) {
+                        top()
+                        // Takes only the height left, so the buttons below always fit.
+                        pad(Modifier.widthIn(max = 320.dp).weight(1f, fill = false).aspectRatio(1f, matchHeightConstraintsFirst = true))
+                        bottom()
                     }
                 }
             }

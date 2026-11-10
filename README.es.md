@@ -161,4 +161,4 @@ Versión 1.0.0. Cada versión está en [Releases](../../releases).
 
 ---
 
-<p align="center">Desarrollado por <a href="https://github.com/Vlarac03">Vlarac</a></p>
+<p align="center">Developed by <a href="https://github.com/Vlarac03">Vlarac</a></p>

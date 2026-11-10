@@ -226,11 +226,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun addStroke(songId: String, stroke: Stroke) = viewModelScope.launch {
-        lastConversion = null // undo now means this stroke
+        record(AnnotationChange(songId, setOf(stroke.id), emptyList()))
         repository.addStroke(songId, stroke)
     }
 
     fun clearPage(songId: String, page: Int) = viewModelScope.launch {
+        val song = library.value.songs.firstOrNull { it.id == songId } ?: return@launch
+        record(AnnotationChange(songId, emptySet(), song.annotations.filter { it.page == page }))
         repository.clearAnnotations(songId, page)
     }
 
@@ -286,27 +288,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             .flatMap { com.vlcsheets.app.data.Handwriting.sameSize(it, height) }
         val handwriting = song.annotations.filter { it.id in removeIds }
         repository.replaceStrokes(song.id, removeIds + oldTexts.map { it.id }, sized)
-        val undo = Conversion(song.id, sized.map { it.id }.toSet(), handwriting + oldTexts)
-        lastConversion = undo
+        val undo = AnnotationChange(song.id, sized.map { it.id }.toSet(), handwriting + oldTexts)
+        record(undo)
         _messages.trySend(
-            UiMessage(R.plurals.handwriting_converted, listOf(added.size), quantity = added.size, onUndo = { undoConversion(undo) }),
+            UiMessage(R.plurals.handwriting_converted, listOf(added.size), quantity = added.size, onUndo = { undoChange(undo) }),
         )
     }
 
-    /** What the last handwriting conversion changed, so it can be undone in one go. */
-    private data class Conversion(val songId: String, val textIds: Set<String>, val before: List<Stroke>)
+    /** One annotation edit: the strokes it added and the ones it removed, so undo can swap them back. */
+    private data class AnnotationChange(val songId: String, val added: Set<String>, val removed: List<Stroke>)
 
-    private var lastConversion: Conversion? = null
+    private val annotationHistory = ArrayDeque<AnnotationChange>()
 
-    private fun undoConversion(c: Conversion) {
-        if (lastConversion == c) lastConversion = null
-        viewModelScope.launch { repository.replaceStrokes(c.songId, c.textIds, c.before) }
+    private fun record(change: AnnotationChange) {
+        annotationHistory.addLast(change)
+        if (annotationHistory.size > 200) annotationHistory.removeFirst()
     }
 
-    /** The annotation toolbar's undo: the last conversion if nothing was drawn after it, else the last stroke. */
-    fun undoAnnotation(songId: String, lastStroke: Stroke?) {
-        val c = lastConversion
-        if (c != null && c.songId == songId) undoConversion(c) else lastStroke?.let { removeStroke(songId, it.id) }
+    private fun undoChange(c: AnnotationChange) {
+        annotationHistory.remove(c)
+        viewModelScope.launch { repository.replaceStrokes(c.songId, c.added, c.removed) }
+    }
+
+    /** The annotation toolbar's undo: the last drawing, erasing, clearing or conversion on this song. */
+    fun undoAnnotation(songId: String) {
+        annotationHistory.lastOrNull { it.songId == songId }?.let(::undoChange)
     }
 
     fun addInkSample(sample: com.vlcsheets.app.data.InkSample) = viewModelScope.launch {
@@ -322,6 +328,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun removeStroke(songId: String, strokeId: String) = viewModelScope.launch {
+        val stroke = library.value.songs.firstOrNull { it.id == songId }?.annotations?.firstOrNull { it.id == strokeId }
+        if (stroke != null) record(AnnotationChange(songId, emptySet(), listOf(stroke)))
         repository.removeStroke(songId, strokeId)
     }
 

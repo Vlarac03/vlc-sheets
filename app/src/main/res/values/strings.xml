@@ -156,7 +156,7 @@
     <string name="clear_library_confirm">S’eliminaran totes les partitures, llistes i anotacions. Aquesta acció no es pot desfer.</string>
     <string name="please_wait">Un moment…</string>
     <string name="about_description">Un lector de partitures ràpid, pensat per tocar en directe. Importa PDF i imatges, anota, crea llistes i passa pàgina amb pedals o tecles.</string>
-    <string name="developed_by">Desenvolupat per Vlarac</string>
+    <string name="developed_by" translatable="false">Developed by Vlarac</string>
     <string name="about_privacy" formatted="false">100 % fora de línia: les teves partitures no surten mai del dispositiu.</string>
     <string name="version_label">Versió %1$s</string>
     <string name="made_with_love">Fet amb cura per a músics · VLC Sheets</string>

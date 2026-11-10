@@ -871,7 +871,7 @@ private fun ViewerContent(
             AnnotationToolbar(
                 penStyle = penStyle,
                 onStyleChange = { penStyle = it },
-                onUndo = { vm.undoAnnotation(song.id, song.annotations.lastOrNull { it.page in visiblePages }) },
+                onUndo = { vm.undoAnnotation(song.id) },
                 onClear = { showClearConfirm = true },
                 onDone = {
                     annotationMode = false

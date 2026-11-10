@@ -147,7 +147,6 @@
     <string name="clear_library_confirm">Se eliminarán todas las partituras, listas y anotaciones. Esta acción no se puede deshacer.</string>
     <string name="please_wait">Un momento…</string>
     <string name="about_description">Un lector de partituras rápido, pensado para tocar en directo. Importa PDF e imágenes, anota, crea listas y pasa página con pedales o teclas.</string>
-    <string name="developed_by">Desarrollado por Vlarac</string>
     <string name="about_privacy" formatted="false">100 % sin conexión: tus partituras nunca salen del dispositivo.</string>
     <string name="version_label">Versión %1$s</string>
     <string name="made_with_love">Hecho con cariño para músicos · VLC Sheets</string>

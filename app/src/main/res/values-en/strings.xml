@@ -147,7 +147,6 @@
     <string name="clear_library_confirm">Every score, setlist and annotation will be deleted. This cannot be undone.</string>
     <string name="please_wait">One moment…</string>
     <string name="about_description">A fast score reader built for live playing. Import PDFs and images, annotate, build setlists and turn pages with pedals or keys.</string>
-    <string name="developed_by">Developed by Vlarac</string>
     <string name="about_privacy" formatted="false">100% offline: your scores never leave the device.</string>
     <string name="version_label">Version %1$s</string>
     <string name="made_with_love">Crafted for musicians · VLC Sheets</string>

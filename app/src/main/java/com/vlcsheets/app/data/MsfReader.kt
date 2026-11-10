@@ -3,12 +3,9 @@ package com.vlcsheets.app.data
 import java.nio.ByteBuffer
 
 /**
- * Reads a .msf file. The layout was worked out from files Victor exported himself:
- * big-endian records marked with 0xFFFF + a tag, and each embedded file stored as
+ * Reads a .msf file: big-endian records marked with 0xFFFF + a tag; embedded files are
  * [i64 size][u16 path length][UTF-8 path][bytes].
- *
- * shortcut: reads titles, pen and line annotations and embedded files only (no other metadata,
- * text annotations or MIDI); extend it when an export with those shows how they are stored.
+ * shortcut: only titles, pen and line annotations and files; extend with a sample that has more.
  */
 object MsfReader {
 
