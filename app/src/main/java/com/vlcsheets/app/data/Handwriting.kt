@@ -13,7 +13,7 @@ import kotlin.math.sqrt
 data class InkSample(val symbol: String, val strokes: List<List<Pt>>)
 
 /** Handwritten symbols the user can teach, in the order the teaching screen shows them. */
-val HANDWRITING_SYMBOLS = listOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "p", "m", "f", "△", "♯", "♭")
+val HANDWRITING_SYMBOLS = listOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "○") // ○ = natural harmonic
 
 /**
  * Turns handwritten strokes into text annotations, with a point-cloud matcher (the $P method):
@@ -46,7 +46,9 @@ object Handwriting {
      * Returns the ids of the strokes to remove and the text annotations that replace them.
      * [aspect] is the page's width / height, since stroke points are 0..1 of each side.
      */
-    fun convert(pageStrokes: List<Stroke>, samples: List<InkSample>, aspect: Float): Pair<Set<String>, List<Stroke>> {
+    fun convert(pageStrokes: List<Stroke>, allSamples: List<InkSample>, aspect: Float): Pair<Set<String>, List<Stroke>> {
+        // Samples of symbols no longer taught (p, m, f… from older versions) are kept but not used.
+        val samples = allSamples.filter { it.symbol in HANDWRITING_SYMBOLS }
         val removed = mutableSetOf<String>()
         val added = mutableListOf<Stroke>()
         for (group in groupCharacters(pageStrokes, aspect)) {
@@ -69,6 +71,27 @@ object Handwriting {
             )
         }
         return removed to added
+    }
+
+    /** A digit with an "a" right after it is one position mark ("4a"), not two texts. */
+    fun joinPositions(texts: List<Stroke>, aspect: Float): List<Stroke> {
+        val out = texts.toMutableList()
+        for (a in texts.filter { it.text == "a" }) {
+            val (a0, a1) = a.points
+            val digit = out.filter { it.page == a.page && it.text.length == 1 && it.text[0].isDigit() }.firstOrNull { d ->
+                val (d0, d1) = d.points
+                val h = d1.y - d0.y
+                val gap = (a0.x - d1.x) * aspect
+                gap in -0.3f * h..0.8f * h && a0.y < d1.y && a1.y > d0.y
+            } ?: continue
+            val (d0, d1) = digit.points
+            out -= a
+            out[out.indexOf(digit)] = digit.copy(
+                text = digit.text + "a",
+                points = listOf(Pt(min(d0.x, a0.x), min(d0.y, a0.y)), Pt(max(d1.x, a1.x), max(d1.y, a1.y))),
+            )
+        }
+        return out
     }
 
     /**

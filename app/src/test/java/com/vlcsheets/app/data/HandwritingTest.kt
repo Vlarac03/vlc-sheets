@@ -96,4 +96,16 @@ class HandwritingTest {
         assertEquals(samples.map { it.symbol }, back.map { it.symbol })
         assertEquals(samples[0].strokes.size, back[0].strokes.size)
     }
+
+    @Test
+    fun joinsDigitAndAIntoOnePosition() {
+        fun text(t: String, x0: Float, y0: Float, x1: Float, y1: Float) = Stroke(t, 0, listOf(Pt(x0, y0), Pt(x1, y1)), 0xFF000000, 2f, text = t)
+        val four = text("4", 0.10f, 0.30f, 0.11f, 0.32f)
+        val a = text("a", 0.112f, 0.30f, 0.12f, 0.31f) // small and raised, right after the 4
+        val farA = text("a", 0.50f, 0.30f, 0.51f, 0.31f)
+        val joined = Handwriting.joinPositions(listOf(four, a, farA), aspect = 1f)
+        assertEquals(listOf("4a", "a"), joined.map { it.text })
+        assertEquals(Pt(0.10f, 0.30f), joined[0].points[0])
+        assertEquals(Pt(0.12f, 0.32f), joined[0].points[1])
+    }
 }

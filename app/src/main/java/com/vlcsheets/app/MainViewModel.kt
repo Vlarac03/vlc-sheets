@@ -284,7 +284,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // Every text on a page gets one size, the new ones and those converted before.
         val height = com.vlcsheets.app.data.Handwriting.TEXT_SIZES.getOrElse(settings.value.handwritingSize) { 0f }
         val oldTexts = song.annotations.filter { it.text.isNotEmpty() && it.page in added.map { a -> a.page } }
-        val sized = (oldTexts + added).groupBy { it.page }.values
+        val sized = com.vlcsheets.app.data.Handwriting.joinPositions(oldTexts + added, song.pageAspect).groupBy { it.page }.values
             .flatMap { com.vlcsheets.app.data.Handwriting.sameSize(it, height) }
         val handwriting = song.annotations.filter { it.id in removeIds }
         repository.replaceStrokes(song.id, removeIds + oldTexts.map { it.id }, sized)
