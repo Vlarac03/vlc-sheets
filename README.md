@@ -8,10 +8,8 @@
 when needed, and fully offline. Import PDFs or images, organise your library, write
 on the page, build setlists and turn pages with Bluetooth pedals or the volume keys.
 
-This is a new app with its own identity and original code. It contains no
-trademarks, texts or assets from MobileSheets: it only takes the idea of a
-professional sheet music reader and rebuilds it with Kotlin, Jetpack Compose and
-Material 3.
+This is a new app with its own identity and original code, built with Kotlin,
+Jetpack Compose and Material 3.
 
 ---
 
@@ -28,7 +26,7 @@ first time, Android asks for permission to install apps from your browser.
 - Import many **PDFs** and **images** (JPG, PNG, WebP…) at once from any file manager.
 - **Text and ChordPro** (`.txt`, `.cho`, `.chopro`…) become a PDF with the chords above
   the lyrics, so they read and annotate like any score.
-- `.msf` files exported from MobileSheets (document, title, annotations and audio).
+- `.msf` files (document, title, annotations and audio).
 - Its own **`.vlcs`** file: one score or a whole setlist with documents, annotations
   and audio, to move it to another tablet.
 - Automatic cover (thumbnail of the first page).
@@ -117,7 +115,7 @@ app/src/main/java/com/vlcsheets/app
 │   ├── LibraryRepository.kt Atomic JSON index, import, backup, restore, audio
 │   ├── ChordPro.kt          Text and ChordPro parsing
 │   ├── Handwriting.kt       Handwriting recogniser (point cloud, $P)
-│   ├── MsfReader.kt         Reads .msf files exported from MobileSheets
+│   ├── MsfReader.kt         Reads .msf files
 │   └── SettingsRepository.kt Reactive SharedPreferences
 ├── media
 │   ├── Media.kt             PdfRenderer, BitmapFactory, EXIF, margin cropping, thumbnails

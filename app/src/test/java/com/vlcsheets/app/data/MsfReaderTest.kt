@@ -55,7 +55,7 @@ class MsfReaderTest {
         assertEquals(7.5f, curve[8].second, 1e-4f)
     }
 
-    /** Run with -DmsfSample=<path to a real .msf> to check a MobileSheets export. */
+    /** Run with -DmsfSample=<path to a real .msf> to check it. */
     @Test
     fun readsRealExportIfGiven() {
         val path = System.getProperty("msfSample")

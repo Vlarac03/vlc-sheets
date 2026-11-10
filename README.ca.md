@@ -9,10 +9,8 @@ ràpid, fosc quan cal, i totalment fora de línia. Importa PDF o imatges, organi
 biblioteca, anota sobre el paper, crea llistes de concert i passa pàgina amb pedals
 Bluetooth o tecles de volum.
 
-Aquest projecte és una implementació nova, amb identitat pròpia i codi original.
-No conté marques, textos ni recursos de MobileSheets: només recull la idea de
-l'experiència d'ús d'un lector de partitures professional i la reinventa amb
-Kotlin, Jetpack Compose i Material 3.
+Aquest projecte és una aplicació nova, amb identitat pròpia i codi original, feta
+amb Kotlin, Jetpack Compose i Material 3.
 
 ---
 
@@ -30,7 +28,7 @@ Android demana permís per instal·lar apps des del navegador.
   gestor de fitxers del sistema.
 - **Text i ChordPro** (`.txt`, `.cho`, `.chopro`…): es converteixen en un PDF amb els
   acords damunt la lletra, així es llegeixen i s'anoten com qualsevol partitura.
-- Fitxers `.msf` exportats de MobileSheets (document, títol, anotacions i àudios).
+- Fitxers `.msf` (document, títol, anotacions i àudios).
 - Fitxer propi **`.vlcs`**: una partitura o una llista sencera amb els documents,
   les anotacions i els àudios, per passar-la a una altra tauleta.
 - Portada generada automàticament (miniatura de la primera pàgina).
@@ -120,7 +118,7 @@ app/src/main/java/com/vlcsheets/app
 │   ├── LibraryRepository.kt Índex JSON atòmic, importació, còpia, restauració, àudios
 │   ├── ChordPro.kt          Lectura de text i ChordPro
 │   ├── Handwriting.kt       Reconeixedor de lletra a mà (núvol de punts, $P)
-│   ├── MsfReader.kt         Lectura dels .msf exportats de MobileSheets
+│   ├── MsfReader.kt         Lectura dels .msf
 │   └── SettingsRepository.kt SharedPreferences reactiu
 ├── media
 │   ├── Media.kt             PdfRenderer, BitmapFactory, EXIF, retall de marges, miniatures

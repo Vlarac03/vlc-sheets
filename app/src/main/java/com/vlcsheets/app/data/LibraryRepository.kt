@@ -335,7 +335,7 @@ class LibraryRepository(private val context: Context) {
         }
     }
 
-    /** Imports every song of a MobileSheets export: document, annotations and audio files. */
+    /** Imports every song of a .msf file: document, annotations and audio files. */
     private fun importMsf(uri: Uri, defaultCollection: String?): List<Song> {
         val tmp = File(context.cacheDir, "import.msf")
         try {

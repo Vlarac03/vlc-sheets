@@ -9,9 +9,8 @@ rápido, oscuro cuando hace falta y totalmente sin conexión. Importa PDF o imá
 organiza la biblioteca, anota sobre el papel, crea listas de concierto y pasa página
 con pedales Bluetooth o con las teclas de volumen.
 
-Este proyecto es una aplicación nueva, con identidad propia y código original. No
-contiene marcas, textos ni recursos de MobileSheets: solo toma la idea de un lector
-de partituras profesional y la rehace con Kotlin, Jetpack Compose y Material 3.
+Este proyecto es una aplicación nueva, con identidad propia y código original, hecha
+con Kotlin, Jetpack Compose y Material 3.
 
 ---
 
@@ -29,7 +28,7 @@ vez, Android pide permiso para instalar apps desde el navegador.
   gestor de archivos.
 - **Texto y ChordPro** (`.txt`, `.cho`, `.chopro`…): se convierten en un PDF con los
   acordes encima de la letra, así se leen y se anotan como cualquier partitura.
-- Archivos `.msf` exportados de MobileSheets (documento, título, anotaciones y audios).
+- Archivos `.msf` (documento, título, anotaciones y audios).
 - Archivo propio **`.vlcs`**: una partitura o una lista entera con los documentos, las
   anotaciones y los audios, para pasarla a otra tableta.
 - Portada automática (miniatura de la primera página).

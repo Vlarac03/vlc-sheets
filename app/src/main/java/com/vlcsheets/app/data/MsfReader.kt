@@ -3,7 +3,7 @@ package com.vlcsheets.app.data
 import java.nio.ByteBuffer
 
 /**
- * Reads a MobileSheets export (.msf). The layout was worked out from files Victor exported himself:
+ * Reads a .msf file. The layout was worked out from files Victor exported himself:
  * big-endian records marked with 0xFFFF + a tag, and each embedded file stored as
  * [i64 size][u16 path length][UTF-8 path][bytes].
  *

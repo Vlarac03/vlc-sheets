@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    // ./gradlew :app:testDebugUnitTest -PmsfSample=<file.msf> also checks a real MobileSheets export.
+    // ./gradlew :app:testDebugUnitTest -PmsfSample=<file.msf> also checks a real .msf file.
     testOptions.unitTests.isIncludeAndroidResources = true
     testOptions.unitTests.all { it.systemProperty("msfSample", providers.gradleProperty("msfSample").getOrElse("")) }
     namespace = "com.vlcsheets.app"
