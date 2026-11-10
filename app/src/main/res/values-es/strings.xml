@@ -124,6 +124,8 @@
     <string name="section_about">Acerca de</string>
     <string name="setting_theme">Tema</string>
     <string name="setting_theme_desc">Elige cómo se ve la aplicación</string>
+    <string name="setting_language">Idioma</string>
+    <string name="setting_language_desc">El idioma de la aplicación</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
@@ -145,6 +147,7 @@
     <string name="clear_library_confirm">Se eliminarán todas las partituras, listas y anotaciones. Esta acción no se puede deshacer.</string>
     <string name="please_wait">Un momento…</string>
     <string name="about_description">Un lector de partituras rápido, pensado para tocar en directo. Importa PDF e imágenes, anota, crea listas y pasa página con pedales o teclas.</string>
+    <string name="developed_by">Desarrollado por Vlarac</string>
     <string name="about_privacy" formatted="false">100 % sin conexión: tus partituras nunca salen del dispositivo.</string>
     <string name="version_label">Versión %1$s</string>
     <string name="made_with_love">Hecho con cariño para músicos · VLC Sheets</string>
@@ -291,6 +294,15 @@
     <string name="handwriting_hint">Escribe cada símbolo 3–5 veces, como lo harías sobre la partitura, y toca Guardar después de cada uno.</string>
     <string name="handwriting_write_here">Escribe «%1$s» aquí</string>
     <string name="handwriting_forget">Olvida «%1$s»</string>
+    <string name="handwriting_delete_sample">Borra esta muestra</string>
+    <string name="setting_handwriting_size">Tamaño del texto de la letra a mano</string>
+    <string name="setting_handwriting_size_desc">Todo el texto convertido de una página tiene el mismo tamaño</string>
+    <string name="size_auto">Automático</string>
+    <string name="size_small">Pequeño</string>
+    <string name="size_medium">Mediano</string>
+    <string name="size_large">Grande</string>
+    <string name="setting_auto_handwriting">Convierte la letra sola</string>
+    <string name="setting_auto_handwriting_desc">Al anotar, lo que escribes se vuelve texto cuando paras un momento</string>
     <plurals name="handwriting_converted">
         <item quantity="one">%1$d símbolo convertido en texto</item>
         <item quantity="other">%1$d símbolos convertidos en texto</item>

@@ -1,14 +1,18 @@
 package com.vlcsheets.app
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import com.vlcsheets.app.data.savedLanguage
 import com.vlcsheets.app.ui.VlcSheetsRoot
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
 
@@ -24,6 +28,13 @@ class MainActivity : ComponentActivity() {
 
     /** Set by Settings while it waits for the user to press a pedal key; gets the next key code. */
     var keyCaptureHandler: ((Int) -> Unit)? = null
+
+    // The language picked in Settings wins over the phone's. As an override it also survives rotation.
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(newBase)
+        val tag = savedLanguage(newBase)
+        if (tag.isNotEmpty()) applyOverrideConfiguration(Configuration().apply { setLocale(Locale.forLanguageTag(tag)) })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

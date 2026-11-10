@@ -92,6 +92,26 @@ object Handwriting {
         return ink.indices.groupBy { find(it) }.values.map { ids -> ids.map { ink[it] } }
     }
 
+    /** Text heights to pick from in Settings, as a part of the page height; 0 = the median of what was written. */
+    val TEXT_SIZES = listOf(0f, 0.015f, 0.022f, 0.03f)
+
+    /**
+     * Gives every text annotation in [texts] the same height: [height] (part of the page height),
+     * or the median of their heights when it is 0. Each keeps its bottom edge and its centre.
+     */
+    fun sameSize(texts: List<Stroke>, height: Float): List<Stroke> {
+        if (texts.isEmpty()) return texts
+        val h = height.takeIf { it > 0f }
+            ?: texts.map { it.points[1].y - it.points[0].y }.sorted()[texts.size / 2]
+        return texts.map { t ->
+            val (a, b) = t.points
+            val k = h / (b.y - a.y).coerceAtLeast(1e-4f)
+            val cx = (a.x + b.x) / 2
+            val halfW = (b.x - a.x) / 2 * k
+            t.copy(points = listOf(Pt(cx - halfW, b.y - h), Pt(cx + halfW, b.y)))
+        }
+    }
+
     /** minX, minY, maxX, maxY. */
     private fun bounds(points: List<Pt>): FloatArray = floatArrayOf(
         points.minOf { it.x }, points.minOf { it.y }, points.maxOf { it.x }, points.maxOf { it.y },

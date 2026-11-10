@@ -42,6 +42,11 @@ android {
         compose = true
     }
 
+    // The language is picked inside the app, so a Play Store bundle must carry all three.
+    bundle {
+        language { enableSplit = false }
+    }
+
     packaging {
         resources.excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "/META-INF/DEPENDENCIES")
     }

@@ -226,6 +226,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun addStroke(songId: String, stroke: Stroke) = viewModelScope.launch {
+        lastConversion = null // undo now means this stroke
         repository.addStroke(songId, stroke)
     }
 
@@ -260,22 +261,60 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun editSong(songId: String, block: (Song) -> Song) = viewModelScope.launch { repository.editSong(songId, block) }
 
-    /** Turns the handwriting on [pages] into text; what is not recognized stays as it is. */
-    fun convertHandwriting(song: Song, pages: IntRange) = viewModelScope.launch {
+    /**
+     * Turns the handwriting picked by [pick] into text; what is not recognized stays as it is.
+     * [auto] (after a pause while writing) only speaks up when something was converted.
+     */
+    fun convertHandwriting(songId: String, auto: Boolean = false, pick: (Stroke) -> Boolean) = viewModelScope.launch {
         val samples = library.value.ink
-        if (samples.isEmpty()) return@launch message(R.string.handwriting_no_samples)
-        val (removeIds, added) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
-            com.vlcsheets.app.data.Handwriting.convert(song.annotations.filter { it.page in pages }, samples, song.pageAspect)
+        val song = library.value.songs.firstOrNull { it.id == songId } ?: return@launch
+        if (samples.isEmpty()) {
+            if (!auto) message(R.string.handwriting_no_samples)
+            return@launch
         }
-        if (added.isEmpty()) return@launch message(R.string.handwriting_none)
-        repository.replaceStrokes(song.id, removeIds, added)
+        val (removeIds, added) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+            com.vlcsheets.app.data.Handwriting.convert(song.annotations.filter(pick), samples, song.pageAspect)
+        }
+        if (added.isEmpty()) {
+            if (!auto) message(R.string.handwriting_none)
+            return@launch
+        }
+        // Every text on a page gets one size, the new ones and those converted before.
+        val height = com.vlcsheets.app.data.Handwriting.TEXT_SIZES.getOrElse(settings.value.handwritingSize) { 0f }
+        val oldTexts = song.annotations.filter { it.text.isNotEmpty() && it.page in added.map { a -> a.page } }
+        val sized = (oldTexts + added).groupBy { it.page }.values
+            .flatMap { com.vlcsheets.app.data.Handwriting.sameSize(it, height) }
         val handwriting = song.annotations.filter { it.id in removeIds }
-        val undo = { viewModelScope.launch { repository.replaceStrokes(song.id, added.map { it.id }.toSet(), handwriting) }; Unit }
-        _messages.trySend(UiMessage(R.plurals.handwriting_converted, listOf(added.size), quantity = added.size, onUndo = undo))
+        repository.replaceStrokes(song.id, removeIds + oldTexts.map { it.id }, sized)
+        val undo = Conversion(song.id, sized.map { it.id }.toSet(), handwriting + oldTexts)
+        lastConversion = undo
+        _messages.trySend(
+            UiMessage(R.plurals.handwriting_converted, listOf(added.size), quantity = added.size, onUndo = { undoConversion(undo) }),
+        )
+    }
+
+    /** What the last handwriting conversion changed, so it can be undone in one go. */
+    private data class Conversion(val songId: String, val textIds: Set<String>, val before: List<Stroke>)
+
+    private var lastConversion: Conversion? = null
+
+    private fun undoConversion(c: Conversion) {
+        if (lastConversion == c) lastConversion = null
+        viewModelScope.launch { repository.replaceStrokes(c.songId, c.textIds, c.before) }
+    }
+
+    /** The annotation toolbar's undo: the last conversion if nothing was drawn after it, else the last stroke. */
+    fun undoAnnotation(songId: String, lastStroke: Stroke?) {
+        val c = lastConversion
+        if (c != null && c.songId == songId) undoConversion(c) else lastStroke?.let { removeStroke(songId, it.id) }
     }
 
     fun addInkSample(sample: com.vlcsheets.app.data.InkSample) = viewModelScope.launch {
         repository.mutateInk { it + sample }
+    }
+
+    fun removeInkSample(sample: com.vlcsheets.app.data.InkSample) = viewModelScope.launch {
+        repository.mutateInk { it - sample }
     }
 
     fun forgetInkSamples(symbol: String) = viewModelScope.launch {

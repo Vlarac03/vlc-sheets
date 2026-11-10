@@ -4,6 +4,8 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.FormatSize
+import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.material.icons.rounded.AutoFixHigh
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.DeleteSweep
@@ -54,7 +59,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -147,6 +154,35 @@ fun SettingsScreen(vm: MainViewModel) {
                     }
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+                Column(modifier = Modifier.padding(16.dp)) {
+                    SettingRow(
+                        icon = Icons.Rounded.Translate,
+                        title = stringResource(R.string.setting_language),
+                        subtitle = stringResource(R.string.setting_language_desc),
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        // Each language is written in its own language, so it can be found whatever is on screen.
+                        listOf("" to stringResource(R.string.theme_system), "ca" to "Català", "es" to "Castellano", "en" to "English")
+                            .forEach { (tag, label) ->
+                                FilterChip(
+                                    selected = settings.language == tag,
+                                    onClick = {
+                                        if (settings.language != tag) {
+                                            vm.updateSettings { it.copy(language = tag) }
+                                            context.findActivity()?.recreate()
+                                        }
+                                    },
+                                    label = { Text(label) },
+                                    shape = CircleShape,
+                                )
+                            }
+                    }
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
                 SwitchRow(
                     icon = Icons.Rounded.MusicNote,
                     title = stringResource(R.string.setting_dynamic_color),
@@ -222,6 +258,37 @@ fun SettingsScreen(vm: MainViewModel) {
                     title = stringResource(R.string.handwriting_teach),
                     subtitle = stringResource(R.string.handwriting_teach_desc),
                 ) { teachHandwriting = true }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+                SwitchRow(
+                    icon = Icons.Rounded.AutoFixHigh,
+                    title = stringResource(R.string.setting_auto_handwriting),
+                    subtitle = stringResource(R.string.setting_auto_handwriting_desc),
+                    checked = settings.autoHandwriting,
+                    onCheckedChange = { vm.updateSettings { s -> s.copy(autoHandwriting = it) } },
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+                Column(modifier = Modifier.padding(16.dp)) {
+                    SettingRow(
+                        icon = Icons.Rounded.FormatSize,
+                        title = stringResource(R.string.setting_handwriting_size),
+                        subtitle = stringResource(R.string.setting_handwriting_size_desc),
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        listOf(R.string.size_auto, R.string.size_small, R.string.size_medium, R.string.size_large)
+                            .forEachIndexed { index, label ->
+                                FilterChip(
+                                    selected = settings.handwritingSize == index,
+                                    onClick = { vm.updateSettings { it.copy(handwritingSize = index) } },
+                                    label = { Text(stringResource(label)) },
+                                    shape = CircleShape,
+                                )
+                            }
+                    }
+                }
             }
         }
 
@@ -338,6 +405,20 @@ fun SettingsScreen(vm: MainViewModel) {
                     }
                 }
             }
+            // Signature with a link to the author's GitHub. Only the browser opens it: the app itself stays offline.
+            val uriHandler = LocalUriHandler.current
+            Text(
+                text = stringResource(R.string.developed_by),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable { runCatching { uriHandler.openUri(AUTHOR_URL) } }
+                    .padding(vertical = 10.dp),
+            )
         }
 
         item {
@@ -575,3 +656,5 @@ private fun SettingIcon(icon: ImageVector, tint: androidx.compose.ui.graphics.Co
         }
     }
 }
+
+private const val AUTHOR_URL = "https://github.com/Vlarac03"

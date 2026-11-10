@@ -159,3 +159,7 @@ PDF, un `.vlcs` o una copia de seguridad.
 ## Estado
 
 Versión 1.0.0. Cada versión está en [Releases](../../releases).
+
+---
+
+<p align="center">Desarrollado por <a href="https://github.com/Vlarac03">Vlarac</a></p>

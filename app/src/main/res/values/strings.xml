@@ -133,6 +133,8 @@
     <string name="section_about">Quant a</string>
     <string name="setting_theme">Tema</string>
     <string name="setting_theme_desc">Tria com es veu l’aplicació</string>
+    <string name="setting_language">Idioma</string>
+    <string name="setting_language_desc">L’idioma de l’aplicació</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Clar</string>
     <string name="theme_dark">Fosc</string>
@@ -154,6 +156,7 @@
     <string name="clear_library_confirm">S’eliminaran totes les partitures, llistes i anotacions. Aquesta acció no es pot desfer.</string>
     <string name="please_wait">Un moment…</string>
     <string name="about_description">Un lector de partitures ràpid, pensat per tocar en directe. Importa PDF i imatges, anota, crea llistes i passa pàgina amb pedals o tecles.</string>
+    <string name="developed_by">Desenvolupat per Vlarac</string>
     <string name="about_privacy" formatted="false">100 % fora de línia: les teves partitures no surten mai del dispositiu.</string>
     <string name="version_label">Versió %1$s</string>
     <string name="made_with_love">Fet amb cura per a músics · VLC Sheets</string>
@@ -292,6 +295,15 @@
     <string name="handwriting_hint">Escriu cada símbol 3–5 vegades, com ho faries damunt la partitura, i toca Desa després de cada un.</string>
     <string name="handwriting_write_here">Escriu «%1$s» aquí</string>
     <string name="handwriting_forget">Oblida «%1$s»</string>
+    <string name="handwriting_delete_sample">Esborra aquesta mostra</string>
+    <string name="setting_handwriting_size">Mida del text de la lletra a mà</string>
+    <string name="setting_handwriting_size_desc">Tot el text convertit d’una pàgina té la mateixa mida</string>
+    <string name="size_auto">Automàtica</string>
+    <string name="size_small">Petita</string>
+    <string name="size_medium">Mitjana</string>
+    <string name="size_large">Gran</string>
+    <string name="setting_auto_handwriting">Converteix la lletra sola</string>
+    <string name="setting_auto_handwriting_desc">En anotar, el que escrius es torna text quan pares un moment</string>
     <plurals name="handwriting_converted">
         <item quantity="one">%1$d símbol convertit en text</item>
         <item quantity="other">%1$d símbols convertits en text</item>

@@ -190,3 +190,7 @@ export a PDF, a `.vlcs` file or a backup.
 ## Status
 
 Version 1.0.0. See [Releases](../../releases) for each version.
+
+---
+
+<p align="center">Developed by <a href="https://github.com/Vlarac03">Vlarac</a></p>

@@ -113,6 +113,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -410,6 +411,15 @@ private fun ViewerContent(
     // The tap modifier lives across recompositions, so it reads the latest handlers.
     val tapLatest by rememberUpdatedState(onPageTap)
     val holdLatest by rememberUpdatedState<(SideAction) -> Unit> { runSideAction(it) }
+    // Auto handwriting: the strokes written since the last pause become text 1.5 s after the pen stops.
+    val freshStrokes = remember { mutableStateListOf<String>() }
+    LaunchedEffect(freshStrokes.size) {
+        if (freshStrokes.isEmpty()) return@LaunchedEffect
+        delay(1500)
+        val ids = freshStrokes.toSet()
+        freshStrokes.clear()
+        vm.convertHandwriting(song.id, auto = true) { it.id in ids }
+    }
     val removeMark: (String) -> Unit = { id ->
         vm.editSong(song.id) { s -> s.copy(jumps = s.jumps.filterNot { it.id == id }, masks = s.masks.filterNot { it.id == id }) }
     }
@@ -438,7 +448,10 @@ private fun ViewerContent(
             scale = newScale
             offset = newOffset
         },
-        onAddStroke = { stroke -> vm.addStroke(song.id, stroke) },
+        onAddStroke = { stroke ->
+            vm.addStroke(song.id, stroke)
+            if (settings.autoHandwriting) freshStrokes += stroke.id
+        },
         onErase = { point -> eraseStrokeAt(song, p, point, vm) },
         onJump = { j -> if (j.isAudio) playAudioButton(j) else jumpTo(j.target) },
         onPlaceJump = { at -> pendingJump = Jump(java.util.UUID.randomUUID().toString(), p, at.x, at.y, 0) },
@@ -629,7 +642,7 @@ private fun ViewerContent(
                                 text = { Text(stringResource(R.string.handwriting_convert)) },
                                 onClick = {
                                     overflowOpen = false
-                                    vm.convertHandwriting(song, visiblePages)
+                                    vm.convertHandwriting(song.id) { it.page in visiblePages }
                                 },
                                 leadingIcon = { Icon(Icons.Rounded.TextFields, contentDescription = null) },
                             )
@@ -858,9 +871,7 @@ private fun ViewerContent(
             AnnotationToolbar(
                 penStyle = penStyle,
                 onStyleChange = { penStyle = it },
-                onUndo = {
-                    song.annotations.lastOrNull { it.page in visiblePages }?.let { vm.removeStroke(song.id, it.id) }
-                },
+                onUndo = { vm.undoAnnotation(song.id, song.annotations.lastOrNull { it.page in visiblePages }) },
                 onClear = { showClearConfirm = true },
                 onDone = {
                     annotationMode = false

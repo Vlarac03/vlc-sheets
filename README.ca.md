@@ -194,3 +194,7 @@ exportes un PDF, un `.vlcs` o una còpia de seguretat.
 ## Estat
 
 Versió 1.0.0. Cada versió és a [Releases](../../releases).
+
+---
+
+<p align="center">Desenvolupat per <a href="https://github.com/Vlarac03">Vlarac</a></p>

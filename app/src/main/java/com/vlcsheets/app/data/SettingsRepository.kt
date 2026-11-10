@@ -35,12 +35,17 @@ data class AppSettings(
     val rightHold: SideAction = SideAction.NONE,
     /** Tuner reference pitch for A4, in Hz. */
     val tunerA4: Int = 440,
+    /** While annotating, handwriting becomes text by itself after a short pause. */
+    val autoHandwriting: Boolean = false,
+    /** App language as a tag ("ca", "es", "en"); empty = the phone's language. */
+    val language: String = "",
+    /** Size of handwriting turned into text: index in Handwriting.TEXT_SIZES (0 = average of what was written). */
+    val handwritingSize: Int = 0,
 )
 
 class SettingsRepository(context: Context) {
 
-    private val prefs: SharedPreferences =
-        context.getSharedPreferences("vlc_sheets_settings", Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = prefsOf(context)
 
     private val _settings = MutableStateFlow(read())
     val settings: StateFlow<AppSettings> = _settings.asStateFlow()
@@ -64,6 +69,9 @@ class SettingsRepository(context: Context) {
         leftHold = sideAction(prefs.getString("left_hold", null)),
         rightHold = sideAction(prefs.getString("right_hold", null)),
         tunerA4 = prefs.getInt("tuner_a4", 440),
+        autoHandwriting = prefs.getBoolean("auto_handwriting", false),
+        language = prefs.getString(LANGUAGE_KEY, "").orEmpty(),
+        handwritingSize = prefs.getInt("handwriting_size", 0),
     )
 
     private fun sideAction(name: String?) =
@@ -88,7 +96,18 @@ class SettingsRepository(context: Context) {
             putString("left_hold", next.leftHold.name)
             putString("right_hold", next.rightHold.name)
             putInt("tuner_a4", next.tunerA4)
+            putBoolean("auto_handwriting", next.autoHandwriting)
+            putString(LANGUAGE_KEY, next.language)
+            putInt("handwriting_size", next.handwritingSize)
         }
         _settings.value = next
     }
 }
+
+private const val LANGUAGE_KEY = "language"
+
+private fun prefsOf(context: Context): SharedPreferences =
+    context.getSharedPreferences("vlc_sheets_settings", Context.MODE_PRIVATE)
+
+/** The language picked in Settings, read before the app's screens exist; empty = the phone's language. */
+fun savedLanguage(context: Context): String = prefsOf(context).getString(LANGUAGE_KEY, "").orEmpty()

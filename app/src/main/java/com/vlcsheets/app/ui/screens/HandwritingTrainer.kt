@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -98,10 +100,14 @@ fun HandwritingTrainer(vm: MainViewModel, onDismiss: () -> Unit) {
                         FilterChip(
                             selected = s == symbol,
                             onClick = { symbol = s; strokes.clear() },
+                            // The symbol, then how many samples it has, small and apart so "1" and "0" never read as "10".
                             label = {
+                                Text(s, fontWeight = if ((counts[s] ?: 0) >= 3) FontWeight.Bold else FontWeight.Normal)
                                 Text(
-                                    "$s  ${counts[s] ?: 0}",
-                                    fontWeight = if ((counts[s] ?: 0) >= 3) FontWeight.Bold else FontWeight.Normal,
+                                    "·${counts[s] ?: 0}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 4.dp),
                                 )
                             },
                         )
@@ -111,6 +117,15 @@ fun HandwritingTrainer(vm: MainViewModel, onDismiss: () -> Unit) {
                     pluralStringResource(R.plurals.handwriting_samples, count, count),
                     style = MaterialTheme.typography.labelLarge,
                 )
+                // What was saved for this symbol, so a wrong sample can be deleted on its own.
+                // The row keeps its height when empty, so the box below does not jump after the first save.
+                val saved = library.ink.filter { it.symbol == symbol }
+                Row(
+                    modifier = Modifier.height(64.dp).horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    saved.forEach { sample -> SampleThumb(sample) { vm.removeInkSample(sample) } }
+                }
                 Box(
                     modifier = Modifier
                         .widthIn(max = 420.dp)
@@ -180,6 +195,43 @@ fun HandwritingTrainer(vm: MainViewModel, onDismiss: () -> Unit) {
                     }
                 }
             }
+        }
+    }
+}
+
+/** One saved sample, drawn to fit a small box, with a cross to delete it. */
+@Composable
+private fun SampleThumb(sample: InkSample, onDelete: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(64.dp)
+            .background(Color.White, MaterialTheme.shapes.small)
+            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.small),
+    ) {
+        Canvas(Modifier.fillMaxSize().padding(10.dp)) {
+            val pts = sample.strokes.flatten()
+            if (pts.isEmpty()) return@Canvas
+            val minX = pts.minOf { it.x }
+            val minY = pts.minOf { it.y }
+            val span = maxOf(pts.maxOf { it.x } - minX, pts.maxOf { it.y } - minY, 1f)
+            val k = size.minDimension / span
+            val ink = DrawScopeStroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+            sample.strokes.filter { it.isNotEmpty() }.forEach { s ->
+                val path = Path().apply {
+                    moveTo((s[0].x - minX) * k, (s[0].y - minY) * k)
+                    s.drop(1).forEach { lineTo((it.x - minX) * k, (it.y - minY) * k) }
+                    if (s.size == 1) lineTo((s[0].x - minX) * k + 0.1f, (s[0].y - minY) * k)
+                }
+                drawPath(path, Color.Black, style = ink)
+            }
+        }
+        IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd).size(24.dp)) {
+            Icon(
+                Icons.Rounded.Close,
+                contentDescription = stringResource(R.string.handwriting_delete_sample),
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(16.dp),
+            )
         }
     }
 }

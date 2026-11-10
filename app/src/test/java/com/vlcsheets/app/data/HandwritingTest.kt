@@ -66,6 +66,19 @@ class HandwritingTest {
     }
 
     @Test
+    fun convertedTextGetsOneSize() {
+        fun text(id: String, x: Float, h: Float) = Stroke(id, 0, listOf(Pt(x, 0.5f - h), Pt(x + h, 0.5f)), 0xFF000000, 2f, text = "1")
+        val texts = listOf(text("a", 0.1f, 0.01f), text("b", 0.3f, 0.02f), text("c", 0.5f, 0.05f))
+        // Automatic: the median height (0.02); each keeps its bottom edge and its centre.
+        Handwriting.sameSize(texts, 0f).forEachIndexed { i, s ->
+            assertEquals(0.02f, s.points[1].y - s.points[0].y, 1e-5f)
+            assertEquals(0.5f, s.points[1].y, 1e-5f)
+            assertEquals((texts[i].points[0].x + texts[i].points[1].x) / 2, (s.points[0].x + s.points[1].x) / 2, 1e-5f)
+        }
+        assertEquals(0.03f, Handwriting.sameSize(texts, 0.03f)[0].let { it.points[1].y - it.points[0].y }, 1e-5f)
+    }
+
+    @Test
     fun strokesOnTwoPagesSideBySideStayApart() {
         // Two-page view: a "4" on page 0 and a "1" on page 1 at the same spot are two characters.
         fun place(shape: List<List<Pt>>, page: Int) = shape.mapIndexed { i, pts ->
