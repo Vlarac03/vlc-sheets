@@ -110,7 +110,8 @@ fun LibraryScreen(
     vm: MainViewModel,
     onOpenSong: (Song) -> Unit,
 ) {
-    val songs by vm.filteredSongs.collectAsStateWithLifecycle()
+    val loadedSongs by vm.filteredSongs.collectAsStateWithLifecycle()
+    val songs = loadedSongs.orEmpty()
     val library by vm.library.collectAsStateWithLifecycle()
     val query by vm.query.collectAsStateWithLifecycle()
     val selectedCollection by vm.selectedCollection.collectAsStateWithLifecycle()
@@ -277,6 +278,8 @@ fun LibraryScreen(
             Spacer(Modifier.height(12.dp))
 
             when {
+                loadedSongs == null -> Spacer(Modifier.weight(1f))
+
                 songs.isEmpty() && library.songs.isEmpty() -> {
                     EmptyState(
                         icon = {
@@ -784,7 +787,7 @@ private fun SongListRow(
                     Spacer(Modifier.width(4.dp))
                 }
                 IconButton(onClick = { menu = true }) {
-                    Icon(Icons.Rounded.MoreVert, contentDescription = null)
+                    Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.more_options))
                 }
             }
         }

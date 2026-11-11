@@ -298,7 +298,7 @@ private fun SetlistCard(
                 }
                 Spacer(Modifier.width(4.dp))
                 IconButton(onClick = { menu = true }, modifier = Modifier.size(40.dp)) {
-                    Icon(Icons.Rounded.MoreVert, contentDescription = null, tint = Color.White)
+                    Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.more_options), tint = Color.White)
                 }
             }
             Spacer(Modifier.height(26.dp))

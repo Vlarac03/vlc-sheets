@@ -7,7 +7,7 @@ data class ChordLine(val chords: String, val text: String, val style: Style = St
 
 data class ChordProSong(val title: String, val artist: String, val lines: List<ChordLine>)
 
-private val DIRECTIVE = Regex("""^\{\s*([A-Za-z_]+)\s*(?::\s*(.*?))?\s*}$""")
+private val DIRECTIVE = Regex("""^\{\s*([A-Za-z_]+)\s*(?::\s*(.*?))?\s*\}$""") // Android's regex needs the closing brace escaped
 
 /**
  * Reads a ChordPro or plain-text song. Chords go in square brackets inside the lyrics

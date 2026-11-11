@@ -76,7 +76,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val metronome = MetronomeEngine()
     val metronomeState: StateFlow<MetronomeState> = metronome.state
 
-    val filteredSongs: StateFlow<List<Song>> = combine(
+    // null until the first result, so the library does not flash "no results" on start.
+    val filteredSongs: StateFlow<List<Song>?> = combine(
         repository.data,
         _query,
         _selectedCollection,
@@ -113,7 +114,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             SortOrder.ADDED -> list.sortedByDescending { it.createdAt }
         }
     }.flowOn(Dispatchers.Default) // sorting a big library with accent folding is too slow for the UI thread
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     init {
         viewModelScope.launch { repository.load() }

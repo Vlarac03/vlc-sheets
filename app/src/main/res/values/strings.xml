@@ -61,6 +61,7 @@
     <string name="field_collections">Col·leccions</string>
     <string name="field_new_collection">Afegeix una col·lecció…</string>
     <string name="field_notes">Notes</string>
+    <string name="more_options">Més opcions</string>
     <string name="favorite">Preferida</string>
     <string name="favorite_hint">Apareixerà destacada a la biblioteca</string>
     <string name="added_on">Afegida el %1$s</string>

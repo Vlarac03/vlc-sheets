@@ -244,7 +244,7 @@ private fun CollectionCard(
                 Surface2(icon = Icons.Rounded.CollectionsBookmark)
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { menu = true }, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Rounded.MoreVert, contentDescription = null, tint = Color.White)
+                    Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.more_options), tint = Color.White)
                 }
             }
             Spacer(Modifier.weight(1f))

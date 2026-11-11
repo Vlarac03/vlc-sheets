@@ -351,8 +351,8 @@ private fun ViewerContent(
         }
     }
 
-    LaunchedEffect(chromeVisible, annotationMode, page) {
-        if (chromeVisible && !annotationMode) {
+    LaunchedEffect(chromeVisible, annotationMode, page, overflowOpen) {
+        if (chromeVisible && !annotationMode && !overflowOpen) {
             delay(5000)
             chromeVisible = false
         }
@@ -611,7 +611,7 @@ private fun ViewerContent(
                     }
                     Box {
                         IconButton(onClick = { overflowOpen = true }) {
-                            Icon(Icons.Rounded.MoreVert, contentDescription = null, tint = Color.White)
+                            Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.more_options), tint = Color.White)
                         }
                         DropdownMenu(expanded = overflowOpen, onDismissRequest = { overflowOpen = false }) {
                             DropdownMenuItem(

@@ -219,7 +219,7 @@ class LibraryRepository(private val context: Context) {
                         importShare(uri, defaultCollection, importedSetlists)
                     else -> listOfNotNull(importSingle(uri, displayName, defaultCollection))
                 }
-            }.getOrDefault(emptyList())
+            }.onFailure { android.util.Log.w("VlcSheets", "Import failed: $displayName", it) }.getOrDefault(emptyList())
             if (songs.isNotEmpty()) imported += songs else failed += 1
         }
 
@@ -282,6 +282,7 @@ class LibraryRepository(private val context: Context) {
             copyUri(uri, dest)
             buildSong(id, folder, dest, isPdf, cleanTitle, "", defaultCollection)
         } catch (t: Throwable) {
+            android.util.Log.w("VlcSheets", "Import failed: $displayName", t)
             folder.deleteRecursively()
             null
         }

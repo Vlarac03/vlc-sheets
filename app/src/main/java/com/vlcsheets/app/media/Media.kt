@@ -5,6 +5,8 @@ import androidx.core.graphics.createBitmap
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Rect
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.pdf.PdfRenderer
@@ -17,6 +19,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.math.abs
 
 /**
  * Reads and rasterises score documents with Android's PdfRenderer (no extra library).
@@ -92,8 +95,19 @@ internal fun contentBounds(pixels: IntArray, w: Int, h: Int): Crop {
         for (y in top..bottom) if (dark(pixels[y * w + x]) && ++n >= 3) return true
         return false
     }
-    val top = (0 until h).firstOrNull(::rowInk) ?: return Crop.FULL
-    val bottom = (h - 1 downTo top).first(::rowInk)
+    val ink = BooleanArray(h) { rowInk(it) }
+    // Browsers print a date and a link at the top and bottom: one thin line, alone near the edge.
+    fun skipEdgeLine(start: Int, dir: Int): Int {
+        var end = start
+        while (end in 0 until h && ink[end]) end += dir
+        val nearEdge = (if (dir > 0) end else h - 1 - end) <= 0.06f * h
+        if (abs(end - start) > 0.015f * h || !nearEdge) return start
+        var next = end
+        while (next in 0 until h && !ink[next]) next += dir
+        return if (next in 0 until h && abs(next - end) >= 0.015f * h) next else start
+    }
+    val top = skipEdgeLine(ink.indexOfFirst { it }.takeIf { it >= 0 } ?: return Crop.FULL, 1)
+    val bottom = skipEdgeLine(ink.indexOfLast { it }, -1)
     val left = (0 until w).firstOrNull { colInk(it, top, bottom) } ?: return Crop.FULL
     val right = (w - 1 downTo left).first { colInk(it, top, bottom) }
     val pad = 0.02f
@@ -105,19 +119,46 @@ internal fun contentBounds(pixels: IntArray, w: Int, h: Int): Crop {
     )
 }
 
-/** Cuts the white margins off [src]; returns the original page if there is nothing to cut. */
+/**
+ * Grows [content] to the page's own shape (A4 stays A4), so the cropped page fills the screen like paper:
+ * extra height goes below the music (or above it at the foot of the page), extra width to both sides.
+ */
+internal fun paperCrop(content: Crop, w: Int, h: Int): Crop {
+    val pageRatio = h.toFloat() / w
+    val ratio = content.height * h / (content.width * w)
+    return if (ratio < pageRatio) {
+        val height = content.width * w * pageRatio / h
+        val top = content.top.coerceAtMost(1f - height)
+        Crop(content.left, top, content.right, top + height)
+    } else {
+        val width = content.height * h / pageRatio / w
+        val left = (content.left - (width - content.width) / 2).coerceIn(0f, 1f - width)
+        Crop(left, content.top, left + width, content.bottom)
+    }
+}
+
+/**
+ * Cuts the white margins off [src], keeping the page's shape; anything outside the music
+ * (a browser's date and link) is painted white. Returns the original page if there is nothing to cut.
+ */
 internal fun cropMargins(src: Bitmap): RenderedPage {
     val w = src.width
     val h = src.height
     val pixels = IntArray(w * h)
     src.getPixels(pixels, 0, w, 0, 0, w, h)
-    val crop = contentBounds(pixels, w, h)
-    if (crop.width > 0.97f && crop.height > 0.97f) return RenderedPage(src)
+    val content = contentBounds(pixels, w, h)
+    if (content.width > 0.97f && content.height > 0.97f) return RenderedPage(src)
+    val crop = paperCrop(content, w, h)
     val x = (crop.left * w).toInt()
     val y = (crop.top * h).toInt()
-    val cut = Bitmap.createBitmap(src, x, y, ((crop.right * w).toInt() - x).coerceAtLeast(1), ((crop.bottom * h).toInt() - y).coerceAtLeast(1))
-    if (cut != src) src.recycle()
-    return RenderedPage(cut, crop)
+    val out = createBitmap((crop.width * w).toInt().coerceAtLeast(1), (crop.height * h).toInt().coerceAtLeast(1))
+    val inked = Rect((content.left * w).toInt(), (content.top * h).toInt(), (content.right * w).toInt(), (content.bottom * h).toInt())
+    Canvas(out).apply {
+        drawColor(Color.WHITE)
+        drawBitmap(src, inked, Rect(inked).apply { offset(-x, -y) }, null)
+    }
+    src.recycle()
+    return RenderedPage(out, crop)
 }
 
 object ImageTools {
