@@ -164,6 +164,7 @@ fun LibraryScreen(
             } else LibraryHeader(
                 songCount = library.songs.size,
                 collectionCount = library.collections.size,
+                loaded = library.loaded,
                 grid = grid,
                 onToggleGrid = { grid = !grid },
                 onTuner = { showTuner = true },
@@ -504,6 +505,7 @@ fun LibraryScreen(
 private fun LibraryHeader(
     songCount: Int,
     collectionCount: Int,
+    loaded: Boolean,
     grid: Boolean,
     onToggleGrid: () -> Unit,
     onTuner: () -> Unit,
@@ -527,8 +529,9 @@ private fun LibraryHeader(
                 style = MaterialTheme.typography.titleLarge.copy(letterSpacing = 2.sp),
             )
             Text(
-                text = pluralStringResource(R.plurals.score_count, songCount, songCount) + " · " +
-                    pluralStringResource(R.plurals.collection_count, collectionCount, collectionCount),
+                text = if (!loaded) " " else
+                    pluralStringResource(R.plurals.score_count, songCount, songCount) + " · " +
+                        pluralStringResource(R.plurals.collection_count, collectionCount, collectionCount),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
