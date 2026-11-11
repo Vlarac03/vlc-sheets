@@ -269,7 +269,9 @@ private fun ViewerContent(
     // shortcut: in two-page mode a pinch zooms both pages, each around its own centre; zoom the pair as one if it bothers.
     val windowSize = LocalWindowInfo.current.containerSize
     val spread = if (settings.twoPagesLandscape && windowSize.width > windowSize.height && song.pageCount > 1) 2 else 1
-    var lastDocPage by remember { mutableIntStateOf(song.lastPage.coerceIn(0, (song.pageCount - 1).coerceAtLeast(0))) }
+    // Songs opened from a setlist (only those requests carry a label) start at page 1, as in a concert.
+    val startPage = if (request.label != null) 0 else song.lastPage
+    var lastDocPage by remember { mutableIntStateOf(startPage.coerceIn(0, (song.pageCount - 1).coerceAtLeast(0))) }
     val pagerState = key(spread) {
         rememberPagerState(initialPage = lastDocPage / spread, pageCount = { (song.pageCount + spread - 1) / spread })
     }
