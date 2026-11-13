@@ -327,4 +327,22 @@
         <item quantity="many">Se eliminarán %d partituras y sus anotaciones. Esta acción no se puede deshacer.</item>
         <item quantity="other">Se eliminarán %d partituras y sus anotaciones. Esta acción no se puede deshacer.</item>
     </plurals>
+
+    <!-- Audit 13/11/2026 -->
+    <string name="page_error">No se ha podido mostrar esta página. El archivo puede estar dañado o puede faltar memoria.</string>
+    <string name="tuner_open_settings">Abrir los ajustes de la app</string>
+    <string name="tuner_error">No se ha podido abrir el micrófono. Puede que otra app lo esté usando.</string>
+    <string name="tuner_a4_down">Baja la nota de referencia</string>
+    <string name="tuner_a4_up">Sube la nota de referencia</string>
+    <string name="bpm_down">Reduce el tempo</string>
+    <string name="bpm_up">Aumenta el tempo</string>
+    <string name="bars_less">Menos compases</string>
+    <string name="bars_more">Más compases</string>
+    <string name="action_restore">Restaurar</string>
+    <string name="open_author_page">Abrir la página del autor en GitHub</string>
+    <plurals name="restore_confirm_text">
+        <item quantity="one">Se sustituirá la biblioteca actual (%d partitura) por el contenido de la copia. Esta acción no se puede deshacer.</item>
+        <item quantity="many">Se sustituirá la biblioteca actual (%d partituras) por el contenido de la copia. Esta acción no se puede deshacer.</item>
+        <item quantity="other">Se sustituirá la biblioteca actual (%d partituras) por el contenido de la copia. Esta acción no se puede deshacer.</item>
+    </plurals>
 </resources>

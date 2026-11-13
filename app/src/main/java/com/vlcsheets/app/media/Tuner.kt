@@ -61,6 +61,10 @@ fun detectPitch(samples: FloatArray, sampleRate: Int, minHz: Float = 40f, maxHz:
 class TunerEngine {
     private val _hz = MutableStateFlow<Float?>(null)
     val hz: StateFlow<Float?> = _hz.asStateFlow()
+    private val _failed = MutableStateFlow(false)
+
+    /** True when the microphone could not be opened or stopped delivering sound. */
+    val failed: StateFlow<Boolean> = _failed.asStateFlow()
 
     @Volatile private var running = false
     private var thread: Thread? = null
@@ -70,6 +74,7 @@ class TunerEngine {
     fun start() {
         if (running) return
         running = true
+        _failed.value = false
         thread = Thread({
             val minBuf = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
             val record = runCatching {
@@ -80,17 +85,29 @@ class TunerEngine {
             }.getOrNull()
             if (record == null) {
                 running = false
+                _failed.value = true
                 return@Thread
             }
             val chunk = ShortArray(HOP)
             val window = FloatArray(WINDOW)
+            var errors = 0
             try {
                 record.startRecording()
                 while (running) {
                     var read = 0
                     while (read < HOP && running) {
                         val n = record.read(chunk, read, HOP - read)
-                        if (n <= 0) break
+                        if (n <= 0) {
+                            // Repeated read errors: give up instead of spinning.
+                            if (++errors >= MAX_READ_ERRORS) {
+                                running = false
+                                _failed.value = true
+                            } else {
+                                Thread.sleep(20)
+                            }
+                            break
+                        }
+                        errors = 0
                         read += n
                     }
                     if (read < HOP) continue
@@ -99,6 +116,10 @@ class TunerEngine {
                     for (i in 0 until HOP) window[WINDOW - HOP + i] = chunk[i] / 32768f
                     _hz.value = detectPitch(window, SAMPLE_RATE)
                 }
+            } catch (e: IllegalStateException) {
+                // startRecording fails when another app holds the microphone.
+                running = false
+                _failed.value = true
             } finally {
                 runCatching { record.stop() }
                 record.release()
@@ -117,5 +138,6 @@ class TunerEngine {
         const val SAMPLE_RATE = 44100
         const val WINDOW = 4096
         const val HOP = 2048
+        const val MAX_READ_ERRORS = 10
     }
 }

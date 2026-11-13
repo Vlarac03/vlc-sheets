@@ -325,4 +325,21 @@
         <item quantity="one">S’eliminarà %d partitura i les seves anotacions. Aquesta acció no es pot desfer.</item>
         <item quantity="other">S’eliminaran %d partitures i les seves anotacions. Aquesta acció no es pot desfer.</item>
     </plurals>
+
+    <!-- Audit 13/11/2026 -->
+    <string name="page_error">No s’ha pogut mostrar aquesta pàgina. El fitxer pot estar malmès o no hi ha prou memòria.</string>
+    <string name="tuner_open_settings">Obre els ajustos de l’app</string>
+    <string name="tuner_error">No s’ha pogut obrir el micròfon. Potser l’està fent servir una altra app.</string>
+    <string name="tuner_a4_down">Baixa la nota de referència</string>
+    <string name="tuner_a4_up">Puja la nota de referència</string>
+    <string name="bpm_down">Redueix el tempo</string>
+    <string name="bpm_up">Augmenta el tempo</string>
+    <string name="bars_less">Menys compassos</string>
+    <string name="bars_more">Més compassos</string>
+    <string name="action_restore">Restaura</string>
+    <string name="open_author_page">Obre la pàgina de l’autor a GitHub</string>
+    <plurals name="restore_confirm_text">
+        <item quantity="one">Se substituirà la biblioteca actual (%d partitura) pel contingut de la còpia. Aquesta acció no es pot desfer.</item>
+        <item quantity="other">Se substituirà la biblioteca actual (%d partitures) pel contingut de la còpia. Aquesta acció no es pot desfer.</item>
+    </plurals>
 </resources>

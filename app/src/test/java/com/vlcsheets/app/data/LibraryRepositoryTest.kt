@@ -148,6 +148,49 @@ class LibraryRepositoryTest {
         assertEquals(mapOf(copy.id to "En Sol"), importedList.songNotes)
     }
 
+
+    @Test
+    fun indexWithUnsafeIdsOrFileNamesIsNotTrusted() = runBlocking {
+        // On disk: the unsafe songs are dropped, the good one stays.
+        writeIndex(
+            JSONArray().put(song.toJson()).put(song.copy(id = "..").toJson())
+                .put(song.copy(id = "a/b").toJson()).put(song.copy(id = "x", fileName = "../../evil.pdf").toJson()),
+        )
+        val repo = LibraryRepository(context).apply { load() }
+        assertEquals(listOf("song1"), repo.data.value.songs.map { it.id })
+        repo.deleteSongs(setOf("..")) // must not touch the parent folder
+        assertTrue(File(libraryDir, "songs/song1/score.pdf").exists())
+
+        // In a backup: the whole restore is refused and the library stays as it was.
+        val zip = File(context.cacheDir, "unsafe.zip")
+        ZipOutputStream(zip.outputStream()).use { out ->
+            out.putNextEntry(ZipEntry("library/index.json"))
+            out.write(JSONObject().put("songs", JSONArray().put(song.copy(id = "..").toJson())).toString().toByteArray())
+            out.closeEntry()
+        }
+        assertTrue(repo.importFrom(Uri.fromFile(zip)).isFailure)
+        assertEquals(listOf("song1"), repo.data.value.songs.map { it.id })
+        assertTrue(isSafeName("5f1c-2_a.pdf"))
+        assertFalse(isSafeName(".hidden"))
+        assertFalse(isSafeName("a..b"))
+        assertFalse(isSafeName("a\b"))
+    }
+
+    @Test
+    fun unzipStopsWhenTheContentIsTooBig() {
+        val repo = LibraryRepository(context)
+        val zip = File(context.cacheDir, "big.zip")
+        ZipOutputStream(zip.outputStream()).use { out ->
+            out.putNextEntry(ZipEntry("songs/a.bin")); out.write(ByteArray(1000)); out.closeEntry()
+        }
+        val ok = File(context.cacheDir, "unzip-ok").apply { deleteRecursively() }
+        repo.unzip(Uri.fromFile(zip), ok, maxBytes = 1000) { it }
+        assertEquals(1000L, File(ok, "songs/a.bin").length())
+
+        val tooBig = File(context.cacheDir, "unzip-big").apply { deleteRecursively() }
+        val failure = runCatching { repo.unzip(Uri.fromFile(zip), tooBig, maxBytes = 999) { it } }.exceptionOrNull()
+        assertTrue(failure is SecurityException)
+    }
     @Test
     fun searchIgnoresAccentsAndCase() {
         assertEquals("saint-saens cancons", MainViewModel.normalize("Saint-Saëns CANÇONS"))

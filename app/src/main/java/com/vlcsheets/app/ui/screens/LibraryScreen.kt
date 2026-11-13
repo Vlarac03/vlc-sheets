@@ -678,7 +678,7 @@ private fun SongGridCard(
             }
             MoreButton(
                 onClick = { menu = true },
-                modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+                modifier = Modifier.align(Alignment.TopEnd),
             )
             if (song.hasAnnotations) {
                 AnnotationBadge(modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp))

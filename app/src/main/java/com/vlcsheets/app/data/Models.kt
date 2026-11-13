@@ -213,6 +213,16 @@ fun Song.toJson(): JSONObject = JSONObject().apply {
     })
 }
 
+private val SAFE_NAME = Regex("[A-Za-z0-9_-][A-Za-z0-9._-]*")
+
+/**
+ * Ids and file names read from a restored or imported file end up in paths, so they must be plain
+ * names: letters, digits, '-', '_' and '.' (never first), no '/', '\' or "..".
+ */
+fun isSafeName(name: String) = SAFE_NAME.matches(name) && ".." !in name
+
+fun Song.hasSafeNames() = isSafeName(id) && isSafeName(fileName) && (thumbFile == null || isSafeName(thumbFile))
+
 fun songFromJson(o: JSONObject): Song {
     val tags = o.optJSONArray("tags")?.let { a -> List(a.length()) { a.optString(it) } } ?: emptyList()
     val collections = o.optJSONArray("collections")?.let { a -> List(a.length()) { a.optString(it) } } ?: emptyList()

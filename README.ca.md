@@ -19,6 +19,8 @@ amb Kotlin, Jetpack Compose i Material 3.
 Baixa l'APK de [Releases](../../releases) i obre'l a la tauleta. El primer cop,
 Android demana permís per instal·lar apps des del navegador.
 
+Nota: l'APK de la v1.0.0 és una versió de proves (debug), no una versió de producció.
+
 ---
 
 ## Funcionalitats

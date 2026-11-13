@@ -243,7 +243,7 @@ private fun CollectionCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface2(icon = Icons.Rounded.CollectionsBookmark)
                 Spacer(Modifier.weight(1f))
-                IconButton(onClick = { menu = true }, modifier = Modifier.size(36.dp)) {
+                IconButton(onClick = { menu = true }, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.more_options), tint = Color.White)
                 }
             }

@@ -62,7 +62,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -85,6 +87,7 @@ fun SettingsScreen(vm: MainViewModel) {
     val library by vm.library.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
     var clearConfirm by remember { mutableStateOf(false) }
+    var restoreConfirm by remember { mutableStateOf(false) }
     // Which pedal key is being assigned: 1 = next page, -1 = previous page, 0 = none.
     var captureKey by remember { mutableIntStateOf(0) }
     var pickHold by remember { mutableIntStateOf(0) }
@@ -308,9 +311,7 @@ fun SettingsScreen(vm: MainViewModel) {
                     icon = Icons.Rounded.Restore,
                     title = stringResource(R.string.backup_restore),
                     subtitle = stringResource(R.string.backup_restore_desc),
-                ) {
-                    importLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
-                }
+                ) { restoreConfirm = true }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
                 ClickRow(
                     icon = Icons.Rounded.DeleteSweep,
@@ -405,20 +406,6 @@ fun SettingsScreen(vm: MainViewModel) {
                     }
                 }
             }
-            // Signature with a link to the author's GitHub. Only the browser opens it: the app itself stays offline.
-            val uriHandler = LocalUriHandler.current
-            Text(
-                text = stringResource(R.string.developed_by),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable { runCatching { uriHandler.openUri(AUTHOR_URL) } }
-                    .padding(vertical = 10.dp),
-            )
         }
 
         item {
@@ -427,7 +414,23 @@ fun SettingsScreen(vm: MainViewModel) {
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            // Signature, always the last line, with a link to the author's GitHub.
+            // Only the browser opens it: the app itself stays offline.
+            val uriHandler = LocalUriHandler.current
+            Text(
+                text = stringResource(R.string.developed_by),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable(onClickLabel = stringResource(R.string.open_author_page), role = Role.Button) {
+                        runCatching { uriHandler.openUri(AUTHOR_URL) }
+                    }
+                    .padding(vertical = 12.dp),
             )
         }
     }
@@ -463,6 +466,17 @@ fun SettingsScreen(vm: MainViewModel) {
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = { pickHold = 0 }) { Text(stringResource(android.R.string.cancel)) }
             },
+        )
+    }
+
+    if (restoreConfirm) {
+        ConfirmDialog(
+            title = stringResource(R.string.backup_restore),
+            text = pluralStringResource(R.plurals.restore_confirm_text, library.songs.size, library.songs.size),
+            confirmLabel = stringResource(R.string.action_restore),
+            destructive = true,
+            onConfirm = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream")) },
+            onDismiss = { restoreConfirm = false },
         )
     }
 

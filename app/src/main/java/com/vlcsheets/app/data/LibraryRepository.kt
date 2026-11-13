@@ -66,7 +66,8 @@ class LibraryRepository(private val context: Context) {
             val songs = json.optJSONArray("songs")?.let { arr ->
                 buildList {
                     for (i in 0 until arr.length()) {
-                        arr.optJSONObject(i)?.let { add(songFromJson(it)) }
+                        // A hand-made index must not point outside songs/.
+                        arr.optJSONObject(i)?.let(::songFromJson)?.takeIf(Song::hasSafeNames)?.let { add(it) }
                     }
                 }
             } ?: emptyList()
@@ -170,9 +171,15 @@ class LibraryRepository(private val context: Context) {
     // Files
     // -----------------------------------------------------------------------
 
-    fun songFolder(songId: String): File = File(songsDir, songId)
+    fun songFolder(songId: String): File {
+        require(isSafeName(songId)) { "song id" }
+        return File(songsDir, songId)
+    }
 
-    fun songFile(song: Song): File = File(File(songsDir, song.id), song.fileName)
+    fun songFile(song: Song): File {
+        require(isSafeName(song.fileName)) { "file name" }
+        return File(songFolder(song.id), song.fileName)
+    }
 
     /** Audio tracks linked to a song (songs/<id>/audio), sorted by name. */
     fun audioFiles(songId: String): List<File> =
@@ -367,9 +374,8 @@ class LibraryRepository(private val context: Context) {
             val songs = List(arr.length()) { i ->
                 val old = songFromJson(arr.getJSONObject(i))
                 val src = File(File(tmp, "songs"), old.id)
-                require(old.id.isNotBlank() && src.isDirectory && src.parentFile?.name == "songs") { "song folder" }
-                // File names come from outside: they must stay inside the song's folder.
-                require(File(old.fileName).name == old.fileName && old.thumbFile.let { it == null || File(it).name == it }) { "file name" }
+                // Ids and file names come from outside: they must stay inside songs/ and the song's folder.
+                require(old.hasSafeNames() && src.isDirectory) { "song folder" }
                 val id = UUID.randomUUID().toString()
                 val folder = File(songsDir, id)
                 created += folder
@@ -509,7 +515,7 @@ class LibraryRepository(private val context: Context) {
                 )
                 _data.value = next
                 persistLocked(next)
-                ids.forEach { runCatching { File(songsDir, it).deleteRecursively() } }
+                ids.filter(::isSafeName).forEach { runCatching { File(songsDir, it).deleteRecursively() } }
             }
         }
     }
@@ -685,8 +691,13 @@ class LibraryRepository(private val context: Context) {
         }
     }
 
-    /** Extracts the zip at [uri] into [dest]; [map] gives each entry's path inside [dest], or null to skip it. */
-    private fun unzip(uri: Uri, dest: File, map: (String) -> String?) {
+    /**
+     * Extracts the zip at [uri] into [dest]; [map] gives each entry's path inside [dest], or null to skip it.
+     * Stops with an error once more than [maxBytes] have been written (a zip bomb would fill the disk).
+     */
+    internal fun unzip(uri: Uri, dest: File, maxBytes: Long = MAX_UNZIPPED_BYTES, map: (String) -> String?) {
+        var total = 0L
+        val buffer = ByteArray(64 * 1024)
         dest.mkdirs()
         val input = context.contentResolver.openInputStream(uri) ?: throw IllegalStateException("Cannot open file")
         input.use { raw ->
@@ -700,7 +711,15 @@ class LibraryRepository(private val context: Context) {
                             throw SecurityException("Invalid archive")
                         }
                         outFile.parentFile?.mkdirs()
-                        FileOutputStream(outFile).use { out -> zip.copyTo(out) }
+                        FileOutputStream(outFile).use { out ->
+                            while (true) {
+                                val n = zip.read(buffer)
+                                if (n < 0) break
+                                total += n
+                                if (total > maxBytes) throw SecurityException("Archive too large")
+                                out.write(buffer, 0, n)
+                            }
+                        }
                     }
                     zip.closeEntry()
                     entry = zip.nextEntry
@@ -722,7 +741,10 @@ class LibraryRepository(private val context: Context) {
                 val restoredIndex = File(tmp, "index.json")
                 require(restoredIndex.exists()) { "index.json missing" }
                 // Validate that the index can be parsed before replacing anything.
-                JSONObject(restoredIndex.readText(Charsets.UTF_8))
+                val restoredSongs = JSONObject(restoredIndex.readText(Charsets.UTF_8)).optJSONArray("songs")
+                for (i in 0 until (restoredSongs?.length() ?: 0)) {
+                    require(songFromJson(restoredSongs!!.getJSONObject(i)).hasSafeNames()) { "unsafe name in index" }
+                }
 
                 trash.deleteRecursively()
                 if (root.exists() && !root.renameTo(trash)) {
@@ -760,6 +782,7 @@ class LibraryRepository(private val context: Context) {
     companion object {
         private const val THUMB_WIDTH = 480
         const val SHARE_EXTENSION = "vlcs"
+        private const val MAX_UNZIPPED_BYTES = 2L * 1024 * 1024 * 1024
         private const val SHARE_INDEX = "vlcsheets.json"
         private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "bmp", "gif", "heic", "heif")
         private val TEXT_EXTENSIONS = setOf("txt", "cho", "crd", "chopro", "chordpro", "pro")

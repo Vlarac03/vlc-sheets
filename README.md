@@ -18,6 +18,8 @@ Jetpack Compose and Material 3.
 Download the APK from [Releases](../../releases) and open it on your tablet. The
 first time, Android asks for permission to install apps from your browser.
 
+Note: the v1.0.0 APK is a test (debug) build, not a release build.
+
 ---
 
 ## Features

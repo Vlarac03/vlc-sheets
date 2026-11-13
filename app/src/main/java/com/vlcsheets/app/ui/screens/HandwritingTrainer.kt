@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -250,7 +251,7 @@ private fun SampleThumb(sample: InkSample, onDelete: () -> Unit) {
                 drawPath(path, Color.Black, style = ink)
             }
         }
-        IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd).size(24.dp)) {
+        IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd).offset(12.dp, (-12).dp).size(48.dp)) {
             Icon(
                 Icons.Rounded.Close,
                 contentDescription = stringResource(R.string.handwriting_delete_sample),

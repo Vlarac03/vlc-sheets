@@ -19,6 +19,8 @@ con Kotlin, Jetpack Compose y Material 3.
 Descarga el APK desde [Releases](../../releases) y ábrelo en la tableta. La primera
 vez, Android pide permiso para instalar apps desde el navegador.
 
+Nota: el APK de la v1.0.0 es una versión de pruebas (debug), no una versión de producción.
+
 ---
 
 ## Funciones

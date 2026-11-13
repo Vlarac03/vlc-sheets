@@ -145,6 +145,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowInsetsCompat
@@ -1165,8 +1166,11 @@ private fun PageView(
     onAddMask: (Mask) -> Unit,
     onRemoveMark: (String) -> Unit,
 ) {
+    // render() returns null for a damaged PDF, a missing file or too little memory.
+    var failed by remember(page, targetWidth, crop) { mutableStateOf(false) }
     val rendered by produceState<RenderedPage?>(initialValue = null, page, targetWidth, crop) {
         value = withContext(Dispatchers.IO) { renderer.render(page, targetWidth, crop) }
+        failed = value == null
     }
     val bitmap = rendered?.bitmap
     // Strokes are stored relative to the whole page; this is the part of it on screen.
@@ -1364,10 +1368,16 @@ private fun PageView(
                 .clip(RoundedCornerShape(2.dp))
                 .background(paperColor),
         ) {
+            if (failed) Text(
+                stringResource(R.string.page_error),
+                color = if (invert) Color.White else Color.DarkGray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.Center).padding(24.dp),
+            )
             bitmap?.let { bmp ->
                 Image(
                     bitmap = bmp.asImageBitmap(),
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.page_of, page + 1, song.pageCount),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.FillBounds,
                     colorFilter = when {
@@ -1822,8 +1832,7 @@ private fun MetronomeSheet(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 FilledIconButton(
                     onClick = { vm.configureMetronome(state.bpm - 1, state.beatsPerBar, state.accentFirst) },
-                    modifier = Modifier.size(44.dp),
-                ) { Icon(Icons.Rounded.Remove, contentDescription = null) }
+                ) { Icon(Icons.Rounded.Remove, contentDescription = stringResource(R.string.bpm_down)) }
 
                 Text(
                     text = state.bpm.toString(),
@@ -1833,8 +1842,7 @@ private fun MetronomeSheet(
 
                 FilledIconButton(
                     onClick = { vm.configureMetronome(state.bpm + 1, state.beatsPerBar, state.accentFirst) },
-                    modifier = Modifier.size(44.dp),
-                ) { Icon(Icons.Rounded.Add, contentDescription = null) }
+                ) { Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.bpm_up)) }
             }
             Text(
                 stringResource(R.string.bpm),
@@ -1845,7 +1853,7 @@ private fun MetronomeSheet(
                 Text(
                     stringResource(R.string.practice_tempo, (state.speed * 100).roundToInt(), effectiveBpm(state.bpm, state.speed)),
                     style = MaterialTheme.typography.labelMedium,
-                    color = Brass,
+                    color = MaterialTheme.colorScheme.tertiary,
                 )
             }
             if (state.bpm != song.tempo || state.beatsPerBar != song.beatsPerBar) {
@@ -1907,8 +1915,7 @@ private fun MetronomeSheet(
                 FilledIconButton(
                     onClick = { vm.editSong(song.id) { it.copy(barsPerPage = (it.barsPerPage - 1).coerceAtLeast(0)) } },
                     enabled = song.barsPerPage > 0,
-                    modifier = Modifier.size(40.dp),
-                ) { Icon(Icons.Rounded.Remove, contentDescription = null) }
+                ) { Icon(Icons.Rounded.Remove, contentDescription = stringResource(R.string.bars_less)) }
                 Text(
                     if (song.barsPerPage > 0) pluralStringResource(R.plurals.bars, song.barsPerPage, song.barsPerPage)
                     else stringResource(R.string.metronome_turn_off),
@@ -1917,8 +1924,7 @@ private fun MetronomeSheet(
                 )
                 FilledIconButton(
                     onClick = { vm.editSong(song.id) { it.copy(barsPerPage = (it.barsPerPage + 1).coerceAtMost(64)) } },
-                    modifier = Modifier.size(40.dp),
-                ) { Icon(Icons.Rounded.Add, contentDescription = null) }
+                ) { Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.bars_more)) }
             }
             Spacer(Modifier.height(6.dp))
             Text(

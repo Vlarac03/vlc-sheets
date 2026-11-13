@@ -43,6 +43,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.vlcsheets.app.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -192,18 +194,17 @@ fun FavoriteBadge(modifier: Modifier = Modifier) {
 
 @Composable
 fun MoreButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier.size(30.dp),
-        shape = CircleShape,
-        color = Color.Black.copy(alpha = 0.34f),
-    ) {
-        IconButton(onClick = onClick, modifier = Modifier.size(30.dp)) {
-            Icon(
-                imageVector = Icons.Rounded.MoreVert,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(18.dp),
-            )
+    // 30 dp circle to look at, 48 dp to touch.
+    IconButton(onClick = onClick, modifier = modifier.size(48.dp)) {
+        Surface(modifier = Modifier.size(30.dp), shape = CircleShape, color = Color.Black.copy(alpha = 0.34f)) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Rounded.MoreVert,
+                    contentDescription = stringResource(R.string.more_options),
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
         }
     }
 }

@@ -313,4 +313,21 @@
         <item quantity="one">%d score and its annotations will be deleted. This cannot be undone.</item>
         <item quantity="other">%d scores and their annotations will be deleted. This cannot be undone.</item>
     </plurals>
+
+    <!-- Audit 13/11/2026 -->
+    <string name="page_error">This page could not be shown. The file may be damaged or the device may be low on memory.</string>
+    <string name="tuner_open_settings">Open app settings</string>
+    <string name="tuner_error">The microphone could not be opened. Another app may be using it.</string>
+    <string name="tuner_a4_down">Lower the reference pitch</string>
+    <string name="tuner_a4_up">Raise the reference pitch</string>
+    <string name="bpm_down">Decrease tempo</string>
+    <string name="bpm_up">Increase tempo</string>
+    <string name="bars_less">Fewer bars</string>
+    <string name="bars_more">More bars</string>
+    <string name="action_restore">Restore</string>
+    <string name="open_author_page">Open the author\'s page on GitHub</string>
+    <plurals name="restore_confirm_text">
+        <item quantity="one">The current library (%d score) will be replaced by the contents of the backup. This cannot be undone.</item>
+        <item quantity="other">The current library (%d scores) will be replaced by the contents of the backup. This cannot be undone.</item>
+    </plurals>
 </resources>

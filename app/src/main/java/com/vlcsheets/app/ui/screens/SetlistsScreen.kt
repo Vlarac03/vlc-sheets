@@ -570,7 +570,7 @@ fun SetlistDetailScreen(
                                             Text(
                                                 text = note,
                                                 style = MaterialTheme.typography.bodySmall,
-                                                color = Brass,
+                                                color = MaterialTheme.colorScheme.tertiary,
                                                 maxLines = 2,
                                                 overflow = TextOverflow.Ellipsis,
                                             )

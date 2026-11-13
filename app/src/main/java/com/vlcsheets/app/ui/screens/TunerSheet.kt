@@ -6,7 +6,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
@@ -17,7 +20,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Remove
@@ -44,13 +46,15 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vlcsheets.app.MainViewModel
 import com.vlcsheets.app.R
 import com.vlcsheets.app.media.TunerEngine
 import com.vlcsheets.app.media.noteFor
-import com.vlcsheets.app.ui.theme.Brass
 import com.vlcsheets.app.ui.theme.Sage
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -64,13 +68,23 @@ fun TunerSheet(vm: MainViewModel, onDismiss: () -> Unit) {
     var granted by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)
     }
-    val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
+    // Denied for good: Android shows no dialog any more, so the button opens the app settings instead.
+    var blocked by remember { mutableStateOf(false) }
+    val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        granted = it
+        blocked = !it && context.findActivity()?.let { a -> ActivityCompat.shouldShowRequestPermissionRationale(a, Manifest.permission.RECORD_AUDIO) } == false
+    }
+    // Back from the app settings: the permission may have changed.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        granted = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+    }
     val engine = remember { TunerEngine() }
     DisposableEffect(granted) {
         if (granted) engine.start()
         onDispose { engine.stop() }
     }
     val hz by engine.hz.collectAsStateWithLifecycle()
+    val failed by engine.failed.collectAsStateWithLifecycle()
     // Keep the last note on screen for a moment between notes instead of flickering.
     var shown by remember { mutableStateOf<Float?>(null) }
     LaunchedEffect(hz) { hz?.let { shown = it } }
@@ -87,9 +101,21 @@ fun TunerSheet(vm: MainViewModel, onDismiss: () -> Unit) {
             if (!granted) {
                 Text(stringResource(R.string.tuner_permission), textAlign = TextAlign.Center)
                 Spacer(Modifier.height(12.dp))
-                Button(onClick = { askPermission.launch(Manifest.permission.RECORD_AUDIO) }) {
-                    Text(stringResource(R.string.tuner_allow))
+                Button(
+                    onClick = {
+                        if (blocked) {
+                            context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)))
+                        } else {
+                            askPermission.launch(Manifest.permission.RECORD_AUDIO)
+                        }
+                    },
+                ) {
+                    Text(stringResource(if (blocked) R.string.tuner_open_settings else R.string.tuner_allow))
                 }
+                return@Column
+            }
+            if (failed) {
+                Text(stringResource(R.string.tuner_error), textAlign = TextAlign.Center)
                 return@Column
             }
             val note = shown?.let { noteFor(it, a4.toFloat()) }
@@ -99,7 +125,7 @@ fun TunerSheet(vm: MainViewModel, onDismiss: () -> Unit) {
                 when {
                     note == null -> MaterialTheme.colorScheme.onSurfaceVariant
                     inTune -> Sage
-                    else -> Brass
+                    else -> MaterialTheme.colorScheme.tertiary
                 },
                 label = "tunerColor",
             )
@@ -135,8 +161,7 @@ fun TunerSheet(vm: MainViewModel, onDismiss: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                 FilledIconButton(
                     onClick = { vm.updateSettings { it.copy(tunerA4 = (it.tunerA4 - 1).coerceAtLeast(415)) } },
-                    modifier = Modifier.size(40.dp),
-                ) { Icon(Icons.Rounded.Remove, contentDescription = null) }
+                ) { Icon(Icons.Rounded.Remove, contentDescription = stringResource(R.string.tuner_a4_down)) }
                 Text(
                     stringResource(R.string.tuner_a4, a4),
                     style = MaterialTheme.typography.titleMedium,
@@ -144,8 +169,7 @@ fun TunerSheet(vm: MainViewModel, onDismiss: () -> Unit) {
                 )
                 FilledIconButton(
                     onClick = { vm.updateSettings { it.copy(tunerA4 = (it.tunerA4 + 1).coerceAtMost(466)) } },
-                    modifier = Modifier.size(40.dp),
-                ) { Icon(Icons.Rounded.Add, contentDescription = null) }
+                ) { Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.tuner_a4_up)) }
             }
         }
     }
